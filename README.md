@@ -7,7 +7,7 @@ Robot Framework Library for Cumulocity
 1. Install via pip
 
     ```sh
-    git+https://github.com/reubenmiller/robotframework-c8y.git@0.0.4
+    git+https://github.com/reubenmiller/robotframework-c8y.git@0.0.6
     ```
 
 2. Create a `.env` file with the following environment variables

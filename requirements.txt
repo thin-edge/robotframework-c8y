@@ -1,4 +1,4 @@
 robotframework~=6.0.1
 python-dotenv~=0.20.0
 c8y-api==1.4
-c8y-test-core @ git+https://github.com/reubenmiller/c8y-test-core.git@0.0.4
+c8y-test-core @ git+https://github.com/reubenmiller/c8y-test-core.git@0.0.5
