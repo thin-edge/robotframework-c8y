@@ -3,8 +3,6 @@ requires = [
     "setuptools>=45",
     "wheel",
     "setuptools_scm>=6.2",
-    "black",
-    "pylint",
 ]
 build-backend = "setuptools.build_meta"
 
