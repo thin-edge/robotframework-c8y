@@ -1,0 +1,27 @@
+[build-system]
+requires = [
+    "setuptools>=45",
+    "wheel",
+    "setuptools_scm>=6.2",
+    "black",
+    "pylint",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "RobotFramework/_version.py"
+
+[project]
+name = "robotframework-c8y"
+description = "Robot Framework library for Cumulocity IoT"
+requires-python = ">=3.8"
+keywords = ["CumulocityIoT", "testing"]
+license = {text = "MPL-2.0"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dynamic = ["version", "dependencies", "readme"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+readme = {file = ["README.md"]}
