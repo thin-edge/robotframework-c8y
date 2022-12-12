@@ -9,7 +9,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "RobotFramework/_version.py"
+write_to = "Cumulocity/_version.py"
 
 [project]
 name = "robotframework-c8y"

@@ -4,3 +4,4 @@ build/
 .env
 __pycache__/
 .DS_Store
+Cumulocity/_version.py
