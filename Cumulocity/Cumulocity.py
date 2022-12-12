@@ -66,7 +66,11 @@ class Cumulocity:
         self.devices = {}
         load_dotenv()
 
-        self.c8y = CustomCumulocityApp()
+        try:
+            self.c8y = CustomCumulocityApp()
+        except Exception as ex:
+            logger.warning("Could not load Cumulocity API client. Trying to continue. %s", ex)
+
         self.device_mgmt = create_context_from_identity(self.c8y)
         self.device_mgmt.configure_retries(timeout=timeout)
 
