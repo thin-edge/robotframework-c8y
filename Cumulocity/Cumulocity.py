@@ -44,16 +44,15 @@ class Cumulocity:
     The "Device Should Exist" keyword will set the context of the device so that subsequent
     keywords will not need to explicity set the device that the keyword is related to.
 
-    >>>
-    *** Settings ***
-    Library    Cumulocity
+    Example.robot::
+        *** Settings ***
+        Library    Cumulocity
 
-    *** Test Cases ***
-    Device initialization sequence
-        Device Should Exist                      tedge01
-        Device Should Have Installed Software    tedge
-        Device Should Have Measurements          minimum=1   type=myCustomMeasurement
-    >>>
+        *** Test Cases ***
+        Device initialization sequence
+            Device Should Exist                      tedge01
+            Device Should Have Installed Software    tedge
+            Device Should Have Measurements          minimum=1   type=myCustomMeasurement
     """
 
     # Default parameter settings
@@ -88,11 +87,11 @@ class Cumulocity:
     ) -> List[str]:
         """Assert number of alarms
 
-        Examples:
+        Examples::
 
-        | Device Should Have Alarm/s | minimum=1 |
-        | Device Should Have Alarm/s | minimum=1 | expected_text=High Temperature |
-        | Device Should Have Alarm/s | minimum=1 | type=custom_typeA | fragmentType=signalStrength |
+            | Device Should Have Alarm/s | minimum=1 |
+            | Device Should Have Alarm/s | minimum=1 | expected_text=High Temperature |
+            | Device Should Have Alarm/s | minimum=1 | type=custom_typeA | fragmentType=signalStrength |
 
         Args:
             minimum (int, optional): Minimum number of alarms to expect. Defaults to 1.

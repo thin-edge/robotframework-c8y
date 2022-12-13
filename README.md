@@ -7,13 +7,13 @@ Robot Framework Library for Cumulocity
 1. Install via pip
 
     ```sh
-    pip install git+https://github.com/reubenmiller/robotframework-c8y.git@0.0.7
+    pip install git+https://github.com/reubenmiller/robotframework-c8y.git@0.0.9
     ```
 
     Or add it to your `requirements.txt` file
 
     ```sh
-    robotframework-c8y @ git+https://github.com/reubenmiller/robotframework-c8y.git@0.0.7
+    robotframework-c8y @ git+https://github.com/reubenmiller/robotframework-c8y.git@0.0.9
     ```
 
     Then install it via
@@ -53,3 +53,9 @@ Robot Framework Library for Cumulocity
 ## Library docs
 
 Checkout the [Cumulocity Library docs](./Cumulocity/Cumulocity.rst)
+
+You can generate the docs yourself using:
+
+```sh
+libdoc Cumulocity/Cumulocity.py show > Cumulocity/Cumulocity.rst
+```

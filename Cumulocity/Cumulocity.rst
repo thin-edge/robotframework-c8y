@@ -13,17 +13,16 @@ subsequent
 keywords will not need to explicity set the device that the keyword is related
 to.
 
-```
-*** Settings ***
-Library    Cumulocity
+Example.robot::
+    *** Settings ***
+    Library    Cumulocity
 
-*** Test Cases ***
-Device initialization sequence
-    Device Should Exist                      tedge01
-    Device Should Have Installed Software    tedge
-    Device Should Have Measurements          minimum=1
+    *** Test Cases ***
+    Device initialization sequence
+        Device Should Exist                      tedge01
+        Device Should Have Installed Software    tedge
+        Device Should Have Measurements          minimum=1
 type=myCustomMeasurement
-```
 
 Importing
 ---------
@@ -92,6 +91,14 @@ Device Should Have Alarm/s
 Arguments:  [minimum: int = 1, expected_text: str | None = None, **kwargs]
 
 Assert number of alarms
+
+Examples::
+
+    | Device Should Have Alarm/s | minimum=1 |
+    | Device Should Have Alarm/s | minimum=1 | expected_text=High Temperature
+|
+    | Device Should Have Alarm/s | minimum=1 | type=custom_typeA |
+fragmentType=signalStrength |
 
 Args:
     minimum (int, optional): Minimum number of alarms to expect. Defaults to
