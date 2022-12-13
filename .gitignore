@@ -5,3 +5,4 @@ build/
 __pycache__/
 .DS_Store
 Cumulocity/_version.py
+wordlist.txt
