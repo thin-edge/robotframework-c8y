@@ -19,7 +19,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-__version__ = "0.0.1"
+try:
+    from . import _version
+    __version__ = _version.version
+except Exception:
+    __version__ = "0.0.0"
+
 __author__ = "Reuben Miller"
 
 ASSERTION_MAPPING = {
@@ -82,6 +87,12 @@ class Cumulocity:
         self, minimum: int = 1, expected_text: str = None, **kwargs
     ) -> List[str]:
         """Assert number of alarms
+
+        Examples:
+
+        | Device Should Have Alarm/s | minimum=1 |
+        | Device Should Have Alarm/s | minimum=1 | expected_text=High Temperature |
+        | Device Should Have Alarm/s | minimum=1 | type=custom_typeA | fragmentType=signalStrength |
 
         Args:
             minimum (int, optional): Minimum number of alarms to expect. Defaults to 1.
