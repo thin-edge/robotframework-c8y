@@ -506,7 +506,47 @@ class Cumulocity:
             logger.info("-" * 60)
 
         return self._convert_to_json(self.device_mgmt.inventory.assert_exists())
+    
+    @keyword("Log Device Info")
+    def show_device_information(self, device_id: str = None):
+        """Show device information, e.g. id, external id and a link to the
+        device in Cumulocity IoT.
 
+        By default it will use the current device context, however you can
+        still specify your own managed object id.
+
+        Args:
+            device_id (str, optional): Managed object id to use as reference.
+                If set to None, then the current context will be used.
+        """
+        if device_id is None:
+            device_id = self.device_mgmt.context.device_id
+
+        if not device_id:
+            logger.warning("No device has been set, nothing to do")
+            return
+
+        managed_object = self.device_mgmt.inventory.assert_exists(device_id)
+
+        external_id = str(managed_object.owner)
+        if external_id.startswith("device_"):
+            external_id = external_id[7:]
+        
+        mgmt_url = "/".join(
+                [
+                    self.device_mgmt.c8y.base_url,
+                    "apps/devicemanagement/index.html#/device",
+                    managed_object.id,
+                    "control",
+                ]
+            )
+
+        logger.info("-" * 60)
+        logger.info("DEVICE SERIAL  : %s", external_id)
+        logger.info("DEVICE ID      : %s", managed_object.id)
+        logger.info("DEVICE TYPE    : %s", managed_object.type)
+        logger.info("DEVICE URL     : %s", mgmt_url)
+        logger.info("-" * 60)        
 
 if __name__ == "__main__":
     pass
