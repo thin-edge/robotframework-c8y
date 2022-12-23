@@ -2,9 +2,8 @@
 """Cumulocity IoT Robot Framework library
 """
 
-import json
 import logging
-from typing import List, Union
+from typing import List, Union, Dict, Any
 
 from dotenv import load_dotenv
 from c8y_test_core.assert_operation import AssertOperation
@@ -397,7 +396,7 @@ class Cumulocity:
             **kwargs,
         )
 
-    def _convert_item(self, item: any) -> str:
+    def _convert_item(self, item: any) -> Dict[str, Any]:
         if not item:
             return ""
 
@@ -405,7 +404,7 @@ class Cumulocity:
         if item and hasattr(item, "to_json"):
             data = item.to_json()
 
-        return json.dumps(data)
+        return data
 
     def _convert_to_json(self, item: any) -> Union[str, List[str]]:
         if isinstance(item, list):
