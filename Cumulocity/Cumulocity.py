@@ -118,7 +118,7 @@ class Cumulocity:
         )
 
     @keyword("Device Should Not Have Alarm/s")
-    def alarm_assert_count(self, **kwargs) -> None:
+    def alarm_assert_no_alarms(self, **kwargs) -> None:
         """Assert that there are no matching alarms
 
         Examples::
