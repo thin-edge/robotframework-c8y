@@ -9,7 +9,10 @@ from typing import List, Union
 from dotenv import load_dotenv
 from c8y_test_core.assert_operation import AssertOperation
 from c8y_test_core.c8y import CustomCumulocityApp
-from c8y_test_core.device_management import DeviceManagement, create_context_from_identity
+from c8y_test_core.device_management import (
+    DeviceManagement,
+    create_context_from_identity,
+)
 from c8y_test_core.models import Software
 from robot.api.deco import keyword, library
 from robot.utils.asserts import fail
@@ -21,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from . import _version
+
     __version__ = _version.version
 except Exception:
     __version__ = "0.0.0"
@@ -73,7 +77,9 @@ class Cumulocity:
         try:
             self.c8y = CustomCumulocityApp()
         except Exception as ex:
-            logger.warning("Could not load Cumulocity API client. Trying to continue. %s", ex)
+            logger.warning(
+                "Could not load Cumulocity API client. Trying to continue. %s", ex
+            )
 
         self.device_mgmt = create_context_from_identity(self.c8y)
         self.device_mgmt.configure_retries(timeout=timeout)
@@ -198,6 +204,18 @@ class Cumulocity:
             event_id=event_id,
             **kwargs,
         )
+
+    #
+    # Configuration
+    #
+    @keyword("Should Support Configurations")
+    def configuration_assert_supported_types(
+        self, *types: str, includes: bool = False
+    ) -> List[str]:
+        supported_types = self.device_mgmt.configuration.assert_supported_types(
+            types, includes=includes
+        )
+        return supported_types
 
     #
     # Software
@@ -506,7 +524,7 @@ class Cumulocity:
             logger.info("-" * 60)
 
         return self._convert_to_json(self.device_mgmt.inventory.assert_exists())
-    
+
     @keyword("Log Device Info")
     def show_device_information(self, device_id: str = None):
         """Show device information, e.g. id, external id and a link to the
@@ -531,22 +549,23 @@ class Cumulocity:
         external_id = str(managed_object.owner)
         if external_id.startswith("device_"):
             external_id = external_id[7:]
-        
+
         mgmt_url = "/".join(
-                [
-                    self.device_mgmt.c8y.base_url,
-                    "apps/devicemanagement/index.html#/device",
-                    managed_object.id,
-                    "control",
-                ]
-            )
+            [
+                self.device_mgmt.c8y.base_url,
+                "apps/devicemanagement/index.html#/device",
+                managed_object.id,
+                "control",
+            ]
+        )
 
         logger.info("-" * 60)
         logger.info("DEVICE SERIAL  : %s", external_id)
         logger.info("DEVICE ID      : %s", managed_object.id)
         logger.info("DEVICE TYPE    : %s", managed_object.type)
         logger.info("DEVICE URL     : %s", mgmt_url)
-        logger.info("-" * 60)        
+        logger.info("-" * 60)
+
 
 if __name__ == "__main__":
     pass
