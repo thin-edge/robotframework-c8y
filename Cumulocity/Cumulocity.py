@@ -13,7 +13,7 @@ from c8y_test_core.device_management import (
     DeviceManagement,
     create_context_from_identity,
 )
-from c8y_test_core.models import Software
+from c8y_test_core.models import Software, Configuration
 from robot.api.deco import keyword, library
 from robot.utils.asserts import fail
 
@@ -130,7 +130,9 @@ class Cumulocity:
         Args:
             **kwargs: Keyword args which are supported by c8y_api library
         """
-        self.device_mgmt.alarms.assert_count(min_matches=0, max_matches=0, resolved="false", **kwargs)
+        self.device_mgmt.alarms.assert_count(
+            min_matches=0, max_matches=0, resolved="false", **kwargs
+        )
 
     @keyword("Alarm Should Exist")
     def alarm_assert_exist(self, alarm_id: str, **kwargs):
@@ -236,6 +238,22 @@ class Cumulocity:
             types, includes=includes
         )
         return supported_types
+
+    @keyword("Get Configuration")
+    def get_configuration(self, typename: str, **kwargs):
+        operation = self.device_mgmt.configuration.get_configuration(
+            Configuration(type=typename),
+            **kwargs,
+        )
+        return operation
+
+    @keyword("Set Configuration")
+    def set_configuration(self, typename: str, url: str, **kwargs):
+        operation = self.device_mgmt.configuration.set_configuration(
+            Configuration(type=typename, url=url),
+            **kwargs,
+        )
+        return operation
 
     #
     # Software
