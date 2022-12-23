@@ -89,7 +89,7 @@ class Cumulocity:
     #
     @keyword("Device Should Have Alarm/s")
     def alarm_assert_count(
-        self, minimum: int = 1, expected_text: str = None, **kwargs
+        self, minimum: int = 1, maximum: int = None, expected_text: str = None, **kwargs
     ) -> List[str]:
         """Assert number of alarms
 
@@ -101,6 +101,8 @@ class Cumulocity:
 
         Args:
             minimum (int, optional): Minimum number of alarms to expect. Defaults to 1.
+            maximum (int, optional): Maximum number of alarms to expect. Ignored if set to None.
+                Defaults to None.
             expected_text (str, optional): Expected alarm text to match. Defaults to None.
 
         Returns:
@@ -108,9 +110,27 @@ class Cumulocity:
         """
         return self._convert_to_json(
             self.device_mgmt.alarms.assert_count(
-                min_matches=minimum, expected_text=expected_text, **kwargs
+                min_matches=minimum,
+                max_matches=maximum,
+                expected_text=expected_text,
+                **kwargs,
             )
         )
+
+    @keyword("Device Should Not Have Alarm/s")
+    def alarm_assert_count(self, **kwargs) -> None:
+        """Assert that there are no matching alarms
+
+        Examples::
+
+            | Device Should Not Have Alarm/s |
+            | Device Should Not Have Alarm/s | expected_text=High Temperature |
+            | Device Should Not Have Alarm/s | type=custom_typeA | fragmentType=signalStrength |
+
+        Args:
+            **kwargs: Keyword args which are supported by c8y_api library
+        """
+        self.device_mgmt.alarms.assert_count(max_matches=0, **kwargs)
 
     @keyword("Alarm Should Exist")
     def alarm_assert_exist(self, alarm_id: str, **kwargs):
