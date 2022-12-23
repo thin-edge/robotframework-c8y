@@ -130,7 +130,7 @@ class Cumulocity:
         Args:
             **kwargs: Keyword args which are supported by c8y_api library
         """
-        self.device_mgmt.alarms.assert_count(max_matches=0, **kwargs)
+        self.device_mgmt.alarms.assert_count(min_matches=0, max_matches=0, resolved="false", **kwargs)
 
     @keyword("Alarm Should Exist")
     def alarm_assert_exist(self, alarm_id: str, **kwargs):
