@@ -58,6 +58,8 @@ class Cumulocity:
             Device Should Have Measurements          minimum=1   type=myCustomMeasurement
     """
 
+    ROBOT_LISTENER_API_VERSION = 3
+
     # Default parameter settings
     DEFAULT_TIMEOUT = 30
 
