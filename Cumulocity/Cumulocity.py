@@ -71,6 +71,7 @@ class Cumulocity:
         timeout: str = DEFAULT_TIMEOUT,
     ):
         self.devices = {}
+        self._on_cleanup = []
         load_dotenv()
 
         try:
@@ -82,6 +83,24 @@ class Cumulocity:
 
         self.device_mgmt = create_context_from_identity(self.c8y)
         self.device_mgmt.configure_retries(timeout=timeout)
+
+    #
+    # Hooks
+    #
+    def end_suite(self, _data: Any, result: Any):
+        """End suite hook which is called by Robot Framework
+        when the test suite has finished
+
+        Args:
+            _data (Any): Test data
+            result (Any): Test details
+        """
+        for func in self._on_cleanup:
+            if callable(func):
+                try:
+                    func()
+                except Exception as ex:
+                    logger.warning("Cleanup function failed. error=%s", ex)
 
     #
     # Alarms
@@ -225,6 +244,29 @@ class Cumulocity:
             event_id=event_id,
             **kwargs,
         )
+
+    #
+    # Binaries
+    #
+    @keyword("Create Inventory Binary")
+    def create_inventory_binary(
+        self,
+        name: str,
+        binary_type: str,
+        file: str = None,
+        contents: str = None,
+        **kwargs,
+    ) -> str:
+        """Create an inventory binary from either a file or a string
+
+        Returns:
+            str: Url to the inventory binary
+        """
+        with self.device_mgmt.binaries.new_binary(
+            name, binary_type, file=file, contents=contents, delete=False, **kwargs
+        ) as binary_ref:
+            self._on_cleanup.append(binary_ref.binary.delete)
+            return binary_ref.url
 
     #
     # Configuration
