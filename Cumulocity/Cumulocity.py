@@ -409,6 +409,19 @@ class Cumulocity:
         """
         return self._convert_to_json(operation.assert_done(**kwargs))
 
+    @keyword("Operation Should Be DELIVERED")
+    def operation_assert_delivered(self, operation: AssertOperation, **kwargs) -> str:
+        """Assert that the operation has been delivered via MQTT.
+        Only works if the agent is subscribed to the operations via mqtt
+
+        Args:
+            operation (AssertOperation): Operation
+
+        Returns:
+            str: Operation as json
+        """
+        return self._convert_to_json(operation.assert_delivered(**kwargs))
+
     @keyword("Operation Should Be FAILED")
     def operation_assert(
         self, operation: AssertOperation, failure_reason: str = ".+", **kwargs
