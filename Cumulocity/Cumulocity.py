@@ -84,6 +84,9 @@ class Cumulocity:
         self.device_mgmt = create_context_from_identity(self.c8y)
         self.device_mgmt.configure_retries(timeout=timeout)
 
+        # pylint: disable=invalid-name
+        self.ROBOT_LIBRARY_LISTENER = self
+
     #
     # Hooks
     #
