@@ -107,6 +107,8 @@ class Cumulocity:
                 except Exception as ex:
                     logger.warning("Cleanup function failed. error=%s", ex)
 
+        self._on_cleanup.clear()
+
     #
     # Alarms
     #
