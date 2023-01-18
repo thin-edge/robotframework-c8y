@@ -12,7 +12,7 @@ from c8y_test_core.device_management import (
     DeviceManagement,
     create_context_from_identity,
 )
-from c8y_test_core.models import Software, Configuration
+from c8y_test_core.models import Software, Configuration, Firmware
 from robot.api.deco import keyword, library
 from robot.utils.asserts import fail
 
@@ -358,6 +358,76 @@ class Cumulocity:
             **kwargs,
         )
         return operation
+
+    #
+    # Firmware
+    #
+    def _firmware_format_list(self, item: str) -> Firmware:
+        """Convert a list of strings to a list of Firmware items.
+        Each item in the list should be a csv string in the format
+        of "<name>,<version>,<url>".
+
+        Leave a blank value if you do not want to set it, e.g. ",1.0.0,"
+
+        Returns:
+            Firmware: Firmware
+        """
+        return Firmware(item.split(",", 3))
+
+    @keyword("Install Firmware")
+    def firmware_install(self, firmware: str, **kwargs) -> AssertOperation:
+        """Install Firmware via an operation
+
+        It does not wait for the operation to be completed. Use with the operation
+        keywords to check if the operation was successful or not.
+
+        Returns:
+            AssertOperation: Operation
+        """
+        item = self._firmware_format_list(firmware)
+        operation = self.device_mgmt.firmware_management.install(
+            item,
+            **kwargs,
+        )
+        return operation
+
+    @keyword("Device Should Have Firmware")
+    def firmware_assert_installed(
+        self, name: str, version: str = "", url: str = "", **kwargs
+    ) -> Dict[str, Any]:
+        """Assert that a device as a specific firmware installed
+
+        Args:
+            name (str): Firmware name
+            version (str, optional): Firmware version
+            url (str, optional): Firmware url
+
+        Returns:
+            Dict[str, Any]: Managed object
+        """
+        item = Firmware(name, version, url)
+        return self._convert_to_json(
+            self.device_mgmt.firmware_management.assert_firmware(item)
+        )
+
+    @keyword("Device Should Not Have Firmware")
+    def firmware_assert_not_installed(
+        self, name: str, version: str = "", url: str = "", **kwargs
+    ) -> Dict[str, Any]:
+        """Assert that a device as a specific firmware is not installed
+
+        Args:
+            name (str): Firmware name
+            version (str, optional): Firmware version
+            url (str, optional): Firmware url
+
+        Returns:
+            Dict[str, Any]: Managed object
+        """
+        item = Firmware(name, version, url)
+        return self._convert_to_json(
+            self.device_mgmt.firmware_management.assert_not_firmware(item)
+        )
 
     #
     # Shell
