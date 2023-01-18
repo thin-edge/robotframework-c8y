@@ -360,6 +360,21 @@ class Cumulocity:
         return operation
 
     #
+    # Shell
+    #
+    @keyword("Execute Shell Command")
+    def shell_execute_command(self, text: str, **kwargs) -> AssertOperation:
+        """Send a shell command to a device via the Cumulocity IoT c8y_Command operation
+
+        Args:
+            text (str): Command to execute
+
+        Returns:
+            AssertOperation: Operation
+        """
+        return self.device_mgmt.command.execute(text, **kwargs)
+
+    #
     # Operations
     #
     @keyword("Operation Should Be SUCCESSFUL")
