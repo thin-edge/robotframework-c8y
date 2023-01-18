@@ -362,31 +362,26 @@ class Cumulocity:
     #
     # Firmware
     #
-    def _firmware_format_list(self, item: str) -> Firmware:
-        """Convert a list of strings to a list of Firmware items.
-        Each item in the list should be a csv string in the format
-        of "<name>,<version>,<url>".
-
-        Leave a blank value if you do not want to set it, e.g. ",1.0.0,"
-
-        Returns:
-            Firmware: Firmware
-        """
-        return Firmware(item.split(",", 3))
-
     @keyword("Install Firmware")
-    def firmware_install(self, firmware: str, **kwargs) -> AssertOperation:
+    def firmware_install(
+        self, name: str, version: str = "", url: str = "", **kwargs
+    ) -> AssertOperation:
         """Install Firmware via an operation
 
         It does not wait for the operation to be completed. Use with the operation
         keywords to check if the operation was successful or not.
 
+        Args:
+            name (str): Firmware name
+            version (str, optional): Firmware version
+            url (str, optional): Firmware url
+
         Returns:
             AssertOperation: Operation
         """
-        item = self._firmware_format_list(firmware)
+        firmware = Firmware(name=name, version=version, url=url)
         operation = self.device_mgmt.firmware_management.install(
-            item,
+            firmware,
             **kwargs,
         )
         return operation
