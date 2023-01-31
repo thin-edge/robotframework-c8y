@@ -668,6 +668,18 @@ class Cumulocity:
             )
         )
 
+    @keyword("Restart Device")
+    def restart_device(self) -> str:
+        """Restart the device via an operation
+
+        It does not wait for the operation to be completed. Use with the operation
+        keywords to check if the operation was successful or not.
+
+        Returns:
+            AssertOperation: Operation
+        """
+        return self.device_mgmt.restart()
+
     @keyword("Device Should Exist")
     def assert_device_exists(
         self,
