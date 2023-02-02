@@ -45,7 +45,7 @@ class Cumulocity:
     Example:
 
     The "Device Should Exist" keyword will set the context of the device so that subsequent
-    keywords will not need to explicity set the device that the keyword is related to.
+    keywords will not need to explicitly set the device that the keyword is related to.
 
     Example.robot::
         *** Settings ***
@@ -118,7 +118,7 @@ class Cumulocity:
     ) -> List[str]:
         """Assert number of alarms
 
-        Examples::
+        Examples:
 
             | Device Should Have Alarm/s | minimum=1 |
             | Device Should Have Alarm/s | minimum=1 | expected_text=High Temperature |
@@ -616,6 +616,10 @@ class Cumulocity:
 
         Returns:
             List[str]: List of measurements as json
+
+        Example:    
+            |             | Command                         |   |                                                                              Result                                                                                                  |
+            | ${measure}= | Device Should Have Measurements | 1 | ${measure} = [{'type': 'c8y_TemperatureMeasurement', 'time': '2023-02-02T13:30:16.343Z', 'c8y_TemperatureMeasurement': {'T': {'unit': 'C', 'value': 20}}, 'source': {'id': '55207'}}] |
         """
         try:
             return self._convert_to_json(

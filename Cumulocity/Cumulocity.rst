@@ -10,8 +10,8 @@ Example:
 
 The "Device Should Exist" keyword will set the context of the device so that
 subsequent
-keywords will not need to explicity set the device that the keyword is related
-to.
+keywords will not need to explicitly set the device that the keyword is
+related to.
 
 Example.robot::
     *** Settings ***
@@ -41,6 +41,16 @@ Args:
 
 Returns:
     str: Alarm json
+
+Create Inventory Binary
+-----------------------
+Arguments:  [name: str, binary_type: str, file: str | None = None, contents:
+            str | None = None, **kwargs]
+
+Create an inventory binary from either a file or a string
+
+Returns:
+    str: Url to the inventory binary
 
 Delete Device Certificate From Platform
 ---------------------------------------
@@ -88,11 +98,12 @@ Returns:
 
 Device Should Have Alarm/s
 --------------------------
-Arguments:  [minimum: int = 1, expected_text: str | None = None, **kwargs]
+Arguments:  [minimum: int = 1, maximum: int | None = None, expected_text: str
+            | None = None, **kwargs]
 
 Assert number of alarms
 
-Examples::
+Examples:
 
     | Device Should Have Alarm/s | minimum=1 |
     | Device Should Have Alarm/s | minimum=1 | expected_text=High Temperature
@@ -103,6 +114,9 @@ fragmentType=signalStrength |
 Args:
     minimum (int, optional): Minimum number of alarms to expect. Defaults to
 1.
+    maximum (int, optional): Maximum number of alarms to expect. Ignored if
+set to None.
+        Defaults to None.
     expected_text (str, optional): Expected alarm text to match. Defaults to
 None.
 
@@ -127,6 +141,20 @@ None.
 
 Returns:
     List[str]: List of events as json
+
+Device Should Have Firmware
+---------------------------
+Arguments:  [name: str, version: str = , url: str = , **kwargs]
+
+Assert that a device as a specific firmware installed
+
+Args:
+    name (str): Firmware name
+    version (str, optional): Firmware version
+    url (str, optional): Firmware url
+
+Returns:
+    Dict[str, Any]: Managed object
 
 Device Should Have Fragments
 ----------------------------
@@ -166,6 +194,45 @@ None.
 Returns:
     List[str]: List of measurements as json
 
+Example:
+    |             | Command                         |   |
+Result
+|
+    | ${measure}= | Device Should Have Measurements | 1 | ${measure} =
+[{'type': 'c8y_TemperatureMeasurement', 'time': '2023-02-02T13:30:16.343Z',
+'c8y_TemperatureMeasurement': {'T': {'unit': 'C', 'value': 20}}, 'source':
+{'id': '55207'}}] |
+
+Device Should Not Have Alarm/s
+------------------------------
+Arguments:  [**kwargs]
+
+Assert that there are no matching alarms
+
+Examples::
+
+    | Device Should Not Have Alarm/s |
+    | Device Should Not Have Alarm/s | expected_text=High Temperature |
+    | Device Should Not Have Alarm/s | type=custom_typeA |
+fragmentType=signalStrength |
+
+Args:
+    **kwargs: Keyword args which are supported by c8y_api library
+
+Device Should Not Have Firmware
+-------------------------------
+Arguments:  [name: str, version: str = , url: str = , **kwargs]
+
+Assert that a device as a specific firmware is not installed
+
+Args:
+    name (str): Firmware name
+    version (str, optional): Firmware version
+    url (str, optional): Firmware url
+
+Returns:
+    Dict[str, Any]: Managed object
+
 Event Should Have An Attachment
 -------------------------------
 Arguments:  [event_id: str, expected_contents: str | None = None,
@@ -198,6 +265,39 @@ Assert that an event does not have an attachment
 Args:
     event_id (str): Event id
 
+Execute Shell Command
+---------------------
+Arguments:  [text: str, **kwargs]
+
+Send a shell command to a device via the Cumulocity IoT c8y_Command operation
+
+Args:
+    text (str): Command to execute
+
+Returns:
+    AssertOperation: Operation
+
+Get Configuration
+-----------------
+Arguments:  [typename: str, **kwargs]
+
+Install Firmware
+----------------
+Arguments:  [name: str, version: str = , url: str = , **kwargs]
+
+Install Firmware via an operation
+
+It does not wait for the operation to be completed. Use with the operation
+keywords to check if the operation was successful or not.
+
+Args:
+    name (str): Firmware name
+    version (str, optional): Firmware version
+    url (str, optional): Firmware url
+
+Returns:
+    AssertOperation: Operation
+
 Install Software
 ----------------
 Arguments:  [*software_list: str, **kwargs]
@@ -209,6 +309,33 @@ keywords to check if the operation was successful or not.
 
 Returns:
     AssertOperation: Operation
+
+Log Device Info
+---------------
+Arguments:  [device_id: str | None = None]
+
+Show device information, e.g. id, external id and a link to the
+device in Cumulocity IoT.
+
+By default it will use the current device context, however you can
+still specify your own managed object id.
+
+Args:
+    device_id (str, optional): Managed object id to use as reference.
+        If set to None, then the current context will be used.
+
+Operation Should Be DELIVERED
+-----------------------------
+Arguments:  [operation: AssertOperation, **kwargs]
+
+Assert that the operation has been delivered via MQTT.
+Only works if the agent is subscribed to the operations via mqtt
+
+Args:
+    operation (AssertOperation): Operation
+
+Returns:
+    str: Operation as json
 
 Operation Should Be DONE
 ------------------------
@@ -274,6 +401,18 @@ Args:
 Returns:
     str: Operation as json
 
+Restart Device
+--------------
+Arguments:  []
+
+Restart the device via an operation
+
+It does not wait for the operation to be completed. Use with the operation
+keywords to check if the operation was successful or not.
+
+Returns:
+    AssertOperation: Operation
+
 Set API Timeout
 ---------------
 Arguments:  [timeout: float = 30]
@@ -285,6 +424,10 @@ be given up on.
 
 Args:
     timeout (float, optional): Timeout in seconds. Defaults to 30.
+
+Set Configuration
+-----------------
+Arguments:  [typename: str, url: str, **kwargs]
 
 Set Device
 ----------
@@ -309,4 +452,8 @@ should be a child device of the current device context.
 
 Returns:
     str: Managed object json
+
+Should Support Configurations
+-----------------------------
+Arguments:  [*types: str, includes: bool = False]
 

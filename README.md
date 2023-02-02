@@ -59,3 +59,9 @@ You can generate the docs yourself using:
 ```sh
 libdoc Cumulocity/Cumulocity.py show > Cumulocity/Cumulocity.rst
 ```
+
+Or the more interactive html documentation using:
+
+```sh
+libdoc Cumulocity/Cumulocity.py Cumulocity/Cumulocity.html
+```
