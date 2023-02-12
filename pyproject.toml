@@ -23,6 +23,6 @@ dynamic = ["version"]
 dependencies = [
   "robotframework >= 6.0.0, < 7.0.0",
   "python-dotenv >= 0.20.0, < 0.21.0",
-  "c8y-test-core @ git+https://github.com/reubenmiller/c8y-test-core.git@0.5.0#egg=c8y-test-core",
+  "c8y-test-core @ git+https://github.com/reubenmiller/c8y-test-core.git@0.6.0#egg=c8y-test-core",
   "importlib-metadata >= 6.0.0, < 7.0.0; python_version<'3.8'",
 ]
