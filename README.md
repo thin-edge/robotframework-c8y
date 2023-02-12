@@ -1,19 +1,19 @@
 # robotframework-c8y
 
-Robot Framework Library for Cumulocity
+Robot Framework Library for Cumulocity IoT
 
 # Using it
 
 1. Install via pip
 
     ```sh
-    pip install git+https://github.com/reubenmiller/robotframework-c8y.git@0.0.9
+    pip install git+https://github.com/reubenmiller/robotframework-c8y.git@0.11.0
     ```
 
     Or add it to your `requirements.txt` file
 
     ```sh
-    robotframework-c8y @ git+https://github.com/reubenmiller/robotframework-c8y.git@0.0.9
+    robotframework-c8y @ git+https://github.com/reubenmiller/robotframework-c8y.git@0.11.0
     ```
 
     Then install it via

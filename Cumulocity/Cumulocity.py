@@ -617,7 +617,7 @@ class Cumulocity:
         Returns:
             List[str]: List of measurements as json
 
-        Example:    
+        Example:
             |             | Command                         |   |                                                                              Result                                                                                                  |
             | ${measure}= | Device Should Have Measurements | 1 | ${measure} = [{'type': 'c8y_TemperatureMeasurement', 'time': '2023-02-02T13:30:16.343Z', 'c8y_TemperatureMeasurement': {'T': {'unit': 'C', 'value': 20}}, 'source': {'id': '55207'}}] |
         """
