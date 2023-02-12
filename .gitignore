@@ -1,4 +1,3 @@
-c8y_test_core/_version.py
 build/
 *.egg-info/
 .env
