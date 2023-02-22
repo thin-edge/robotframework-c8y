@@ -4,7 +4,10 @@
 
 import logging
 from typing import List, Union, Dict, Any
+import json
+import re
 
+from dotmap import DotMap
 from dotenv import load_dotenv
 from c8y_test_core.assert_operation import AssertOperation
 from c8y_test_core.c8y import CustomCumulocityApp
@@ -29,6 +32,11 @@ except Exception:
     __version__ = "0.0.0"
 
 __author__ = "Reuben Miller"
+
+
+def is_dot_notation(key: str) -> bool:
+    return re.match(r"^[\w.\-: ]$", key, re.IGNORECASE) is not None
+
 
 ASSERTION_MAPPING = {
     "assert_count": "Device Should Have %s/s",
@@ -655,6 +663,87 @@ class Cumulocity:
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_contains_fragments(fragments)
         )
+
+    @keyword("Device Should Have Fragment Values")
+    def assert_contains_fragments(self, *properties: str) -> Dict[str, Any]:
+        """Assert that a managed object contains specific fragment values.
+
+        It supports referencing nested fragments via dot notation.
+
+        Examples:
+            | Device Should Have Fragment Values | status=down |
+            | Device Should Have Fragment Values | status=down | c8y_Hardware.serialNumber="abcdef 01234" |
+
+        Args:
+            properties (List[str]): List of key/values which correspond to fragments
+                and their values that are expected to be present
+
+        Returns:
+            Dict[str, Any]: Managed object
+        """
+
+        value_dict = self._create_dict(*properties)
+        return self._convert_to_json(
+            self.device_mgmt.inventory.assert_contains_fragment_values(value_dict)
+        )
+
+    def _create_dict(self, properties: List[Union[str, dict]]) -> dict:
+        values = DotMap()
+        for item in properties:
+            if isinstance(item, str):
+                if item.startswith("{") and item.endswith("}"):
+                    obj = json.loads(item)
+
+                    value_dict = DotMap(
+                        {
+                            **value_dict,
+                            **obj,
+                        }
+                    )
+                else:
+                    key, _, value = str(item).partition("=")
+                    key = key.strip()
+                    value = value.strip()
+
+                    # Try to parse value to a type, fallback to a string
+                    try:
+                        typed_value = json.loads(value)
+                    except json.decoder.JSONDecodeError:
+                        typed_value = str(value)
+
+                    if key and is_dot_notation(key):
+                        # Assign nested path
+                        tmp = values
+                        key_parts = key.split(".")
+                        for k in key_parts[:-1]:
+                            tmp = tmp[k]
+
+                        tmp[key_parts[-1]] = typed_value
+                    elif isinstance(typed_value, dict):
+                        values = DotMap(
+                            {
+                                **values,
+                                **typed_value,
+                            }
+                        )
+                    else:
+                        raise ValueError(
+                            "Value type not supported. Please set a string, number, boolean, or object"
+                        )
+
+            elif isinstance(item, dict):
+                value_dict = DotMap(
+                    {
+                        **value_dict,
+                        **obj,
+                    }
+                )
+            else:
+                raise ValueError(
+                    "Value type not supported. Only str and dictionaries are supported as properties"
+                )
+
+        return values.toDict()
 
     @keyword("Should Be A Child Device Of Device")
     def assert_child_device_relationship(
