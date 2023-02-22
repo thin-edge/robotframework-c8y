@@ -35,7 +35,7 @@ __author__ = "Reuben Miller"
 
 
 def is_dot_notation(key: str) -> bool:
-    return re.match(r"^[\w.\-: ]$", key, re.IGNORECASE) is not None
+    return re.match(r"^[\w.\-: ]+$", key, re.IGNORECASE) is not None
 
 
 ASSERTION_MAPPING = {
