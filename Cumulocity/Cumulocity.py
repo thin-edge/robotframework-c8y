@@ -682,7 +682,7 @@ class Cumulocity:
             Dict[str, Any]: Managed object
         """
 
-        value_dict = self._create_dict(*properties)
+        value_dict = self._create_dict(properties)
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_contains_fragment_values(value_dict)
         )
