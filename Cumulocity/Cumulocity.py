@@ -665,7 +665,7 @@ class Cumulocity:
         )
 
     @keyword("Device Should Have Fragment Values")
-    def assert_contains_fragments(self, *properties: str) -> Dict[str, Any]:
+    def assert_contains_fragment_values(self, *properties: str) -> Dict[str, Any]:
         """Assert that a managed object contains specific fragment values.
 
         It supports referencing nested fragments via dot notation.
