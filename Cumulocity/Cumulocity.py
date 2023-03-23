@@ -288,10 +288,10 @@ class Cumulocity:
     #
     @keyword("Should Support Configurations")
     def configuration_assert_supported_types(
-        self, *types: str, includes: bool = False
+        self, *types: str, includes: bool = False, **kwargs
     ) -> List[str]:
         supported_types = self.device_mgmt.configuration.assert_supported_types(
-            types, includes=includes
+            types, includes=includes, **kwargs
         )
         return supported_types
 
@@ -410,7 +410,7 @@ class Cumulocity:
         """
         item = Firmware(name, version, url)
         return self._convert_to_json(
-            self.device_mgmt.firmware_management.assert_firmware(item)
+            self.device_mgmt.firmware_management.assert_firmware(item, **kwargs)
         )
 
     @keyword("Device Should Not Have Firmware")
@@ -429,7 +429,7 @@ class Cumulocity:
         """
         item = Firmware(name, version, url)
         return self._convert_to_json(
-            self.device_mgmt.firmware_management.assert_not_firmware(item)
+            self.device_mgmt.firmware_management.assert_not_firmware(item, **kwargs)
         )
 
     #
@@ -582,7 +582,7 @@ class Cumulocity:
     #
     @keyword("Set Device")
     def set_device(
-        self, external_id: str = None, external_type: str = "c8y_Serial"
+        self, external_id: str = None, external_type: str = "c8y_Serial", **kwargs
     ) -> str:
         """Set the device context which will be used for subsequent keywords
 
@@ -594,7 +594,9 @@ class Cumulocity:
             str: Managed object json
         """
 
-        identity = self.device_mgmt.identity.assert_exists(external_id, external_type)
+        identity = self.device_mgmt.identity.assert_exists(
+            external_id, external_type, **kwargs
+        )
         self.device_mgmt.set_device_id(identity.id)
 
         return self._convert_to_json(
@@ -602,14 +604,14 @@ class Cumulocity:
         )
 
     @keyword("Device Should Have A Child Devices")
-    def assert_child_device_names(self, *name: str) -> List[str]:
+    def assert_child_device_names(self, *name: str, **kwargs) -> List[str]:
         """Assert the presence of child devices and their matching names
 
         Returns:
             List[str]: List of child devices json
         """
         return self._convert_to_json(
-            self.device_mgmt.inventory.assert_child_device_names(*name)
+            self.device_mgmt.inventory.assert_child_device_names(*name, **kwargs)
         )
 
     @keyword("Device Should Have Measurements")
@@ -640,7 +642,7 @@ class Cumulocity:
 
     @keyword("Delete Managed Object and Device User")
     def delete_managed_object(
-        self, external_id: str, external_id_type: str = "c8y_Serial"
+        self, external_id: str, external_id_type: str = "c8y_Serial", **kwargs
     ):
         """Delete managed object and related device user
 
@@ -649,23 +651,25 @@ class Cumulocity:
             external_id_type (str, optional): External identity type. Defaults to "c8y_Serial".
         """
         managed_object = self.device_mgmt.identity.assert_exists(
-            external_id, external_type=external_id_type
+            external_id, external_type=external_id_type, **kwargs
         )
         self.device_mgmt.inventory.delete_device_and_user(managed_object)
 
     @keyword("Device Should Have Fragments")
-    def assert_contains_fragments(self, *fragments: str) -> str:
+    def assert_contains_fragments(self, *fragments: str, **kwargs) -> str:
         """Assert that a device contains specific fragments
 
         Returns:
             str: Managed object json
         """
         return self._convert_to_json(
-            self.device_mgmt.inventory.assert_contains_fragments(fragments)
+            self.device_mgmt.inventory.assert_contains_fragments(fragments, **kwargs)
         )
 
     @keyword("Device Should Have Fragment Values")
-    def assert_contains_fragment_values(self, *properties: str) -> Dict[str, Any]:
+    def assert_contains_fragment_values(
+        self, *properties: str, **kwargs
+    ) -> Dict[str, Any]:
         """Assert that a managed object contains specific fragment values.
 
         It supports referencing nested fragments via dot notation.
@@ -684,7 +688,9 @@ class Cumulocity:
 
         value_dict = self._create_dict(properties)
         return self._convert_to_json(
-            self.device_mgmt.inventory.assert_contains_fragment_values(value_dict)
+            self.device_mgmt.inventory.assert_contains_fragment_values(
+                value_dict, **kwargs
+            )
         )
 
     def _create_dict(self, properties: List[Union[str, dict]]) -> dict:
@@ -747,7 +753,7 @@ class Cumulocity:
 
     @keyword("Should Be A Child Device Of Device")
     def assert_child_device_relationship(
-        self, external_id: str, external_id_type: str = "c8y_Serial"
+        self, external_id: str, external_id_type: str = "c8y_Serial", **kwargs
     ) -> str:
         """Assert that a child device (referenced via external identity)
         should be a child device of the current device context.
@@ -757,12 +763,12 @@ class Cumulocity:
         """
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_relationship(
-                external_id, external_id_type, child_type="childDevices"
+                external_id, external_id_type, child_type="childDevices", **kwargs
             )
         )
 
     @keyword("Restart Device")
-    def restart_device(self) -> str:
+    def restart_device(self, **kwargs) -> str:
         """Restart the device via an operation
 
         It does not wait for the operation to be completed. Use with the operation
@@ -771,7 +777,7 @@ class Cumulocity:
         Returns:
             AssertOperation: Operation
         """
-        return self.device_mgmt.restart()
+        return self.device_mgmt.restart(**kwargs)
 
     @keyword("Device Should Exist")
     def assert_device_exists(
@@ -779,6 +785,7 @@ class Cumulocity:
         external_id: str,
         external_type: str = "c8y_Serial",
         show_info: bool = True,
+        **kwargs,
     ) -> str:
         """Assert that a device exists by checking its external identity
 
@@ -789,7 +796,9 @@ class Cumulocity:
         Returns:
             str: Managed object json
         """
-        identity = self.device_mgmt.identity.assert_exists(external_id, external_type)
+        identity = self.device_mgmt.identity.assert_exists(
+            external_id, external_type, **kwargs
+        )
         self.device_mgmt.set_device_id(identity.id)
 
         if show_info:
@@ -810,7 +819,7 @@ class Cumulocity:
         return self._convert_to_json(self.device_mgmt.inventory.assert_exists())
 
     @keyword("Log Device Info")
-    def show_device_information(self, device_id: str = None):
+    def show_device_information(self, device_id: str = None, **kwargs):
         """Show device information, e.g. id, external id and a link to the
         device in Cumulocity IoT.
 
@@ -828,7 +837,7 @@ class Cumulocity:
             logger.warning("No device has been set, nothing to do")
             return
 
-        managed_object = self.device_mgmt.inventory.assert_exists(device_id)
+        managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
 
         external_id = str(managed_object.owner)
         if external_id.startswith("device_"):
