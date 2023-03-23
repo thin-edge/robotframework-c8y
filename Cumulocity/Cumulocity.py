@@ -859,6 +859,40 @@ class Cumulocity:
         logger.info("DEVICE URL     : %s", mgmt_url)
         logger.info("-" * 60)
 
+    @keyword("Should Have Services")
+    def assert_services(
+        self,
+        device_id: str = None,
+        min_count: int = 1,
+        max_count: int = None,
+        service_type: str = None,
+        status: str = None,
+        name: str = None,
+        **kwargs,
+    ):
+        """Device should have a specific count of service matching the given criteria
+
+        Args:
+            device_id (str, optional): Managed object id to use as reference.
+                If set to None, then the current context will be used.
+            min_count (int, optional): Minimum number of service matches (inclusive)
+            max_count (int, optional): Maximum number of service matches (inclusive)
+            service_type (str, optional): Filter by service type
+            name (str, optional): Filter by service name
+            status (str, optional): Filter by service status
+        """
+        return self._convert_to_json(
+            self.device_mgmt.inventory.assert_services(
+                inventory_id=device_id,
+                min_count=min_count,
+                max_count=max_count,
+                service_type=service_type,
+                name=name,
+                status=status,
+                **kwargs,
+            )
+        )
+
 
 if __name__ == "__main__":
     pass
