@@ -553,6 +553,8 @@ class Cumulocity:
         data = item
         if item and hasattr(item, "to_json"):
             data = item.to_json()
+            if data and hasattr(item, "id"):
+                data["id"] = item.id
 
         return data
 
