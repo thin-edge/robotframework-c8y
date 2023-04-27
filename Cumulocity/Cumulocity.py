@@ -450,6 +450,46 @@ class Cumulocity:
     #
     # Operations
     #
+    @keyword("Create Operation")
+    def create_operation(
+        self, fragments: Union[Dict[str, Any], str], description="Custom operation", **kwargs
+    ) -> AssertOperation:
+        """Create an operation using provided fragments.
+
+        This keyword can be used to create any Cumulocity operation as it does not assume the data structure.
+
+        It does not wait for the operation to be completed. Use with the operation
+        keywords to check if the operation was successful or not.
+
+        Examples:
+            | ${operation}= | Create Operation | fragments={"c8y_Command":{"text":"ls -l"}} |
+            | ${operation}= | Create Operation | fragments={"c8y_Command":{"text":"ls -l"}} | description=Send shell operation |
+            | ${operation}= | Create Operation | fragments={"c8y_Command":{"text":"ls -l"}} | otherInfo=foobar |
+
+        Args:
+            fragments (Union[Dict[str, Any], str]): Fragments to be included in the operation body.
+                If a string is provided it will be parsed as json. Defaults to {}
+            description (str, optional): Description. Defaults to 'Custom operation'
+
+        Returns:
+            AssertOperation: Operation
+        """
+        if fragments is None:
+            fragments = {}
+
+        if isinstance(fragments, str):
+            fragments = json.loads(fragments)
+
+        op_fragments = {
+            "description": description,
+            **fragments,
+            **kwargs
+        }
+        operation = self.device_mgmt.create_operation(
+            **op_fragments,
+        )
+        return operation
+
     @keyword("Operation Should Be SUCCESSFUL")
     def operation_assert_success(self, operation: AssertOperation, **kwargs) -> str:
         """Assert that the operation is set to SUCCESSFUL
