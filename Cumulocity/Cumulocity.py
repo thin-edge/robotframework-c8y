@@ -88,7 +88,9 @@ class Cumulocity:
             self.c8y = CustomCumulocityApp()
         except Exception as ex:
             logger.warning(
-                "Could not load Cumulocity API client. Trying to continue. %s", ex
+                "Could not load Cumulocity API client. Trying to continue. %s",
+                ex,
+                exc_info=True,
             )
 
         self.device_mgmt = create_context_from_identity(self.c8y)
@@ -452,7 +454,10 @@ class Cumulocity:
     #
     @keyword("Create Operation")
     def create_operation(
-        self, fragments: Union[Dict[str, Any], str], description="Custom operation", **kwargs
+        self,
+        fragments: Union[Dict[str, Any], str],
+        description="Custom operation",
+        **kwargs,
     ) -> AssertOperation:
         """Create an operation using provided fragments.
 
@@ -480,11 +485,7 @@ class Cumulocity:
         if isinstance(fragments, str):
             fragments = json.loads(fragments)
 
-        op_fragments = {
-            "description": description,
-            **fragments,
-            **kwargs
-        }
+        op_fragments = {"description": description, **fragments, **kwargs}
         operation = self.device_mgmt.create_operation(
             **op_fragments,
         )
