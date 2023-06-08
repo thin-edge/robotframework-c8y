@@ -331,8 +331,15 @@ class Cumulocity:
     @keyword("Device Should Have Installed Software")
     def software_assert_installed(
         self, *expected_software_list: str, mo: str = None, **kwargs
-    ) -> str:
+    ) -> Dict[str, Dict[str, Any]]:
         """Assert that software packages are installed (in the c8y_SoftwareList fragment)
+
+        Examples:
+
+            | ${software}= | Device Should Have Installed Software | package-001 | package-002,1.0.0 |
+            | Length Should Be | ${software} | 1000 |
+            | Should Contain | ${software} | package-001 |
+            | Should Be Equal | ${software["package-002"]["version"]} | 1.0.0 |
 
         Args:
             mo (str, optional): Device Managed object. Defaults to None.
@@ -340,7 +347,7 @@ class Cumulocity:
                 will be used.
 
         Returns:
-            str: Managed object json
+            Dict[str, Dict[str, Any]]: Managed object json
         """
         items = self._software_format_list(*expected_software_list)
 
