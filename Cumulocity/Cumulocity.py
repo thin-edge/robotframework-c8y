@@ -459,6 +459,40 @@ class Cumulocity:
     #
     # Operations
     #
+    @keyword("Should Contain Supported Operations")
+    def operation_assert_contains_supported_operations(
+        self, *types: str, **kwargs
+    ) -> Dict[str, Any]:
+        """Should contain the given supported operations.
+
+        Additional supported operations that are not included in the assertion
+        may exist.
+
+        Examples:
+            | ${mo}= | Should Contain Supported Operations | c8y_Restart | c8y_SoftwareUpdate |
+        """
+        return self._convert_to_json(
+            self.device_mgmt.inventory.assert_contains_supported_operations(
+                *types, **kwargs
+            )
+        )
+
+    @keyword("Should Have Exact Supported Operations")
+    def operation_assert_supported_operations(
+        self, *types: str, **kwargs
+    ) -> Dict[str, Any]:
+        """Should have exactly the given supported operations.
+
+        Additional supported operations that are not included in the assertion
+        may NOT exist.
+
+        Examples:
+            | ${mo}= | Should Have Exact Supported Operations | c8y_Restart |
+        """
+        return self._convert_to_json(
+            self.device_mgmt.inventory.assert_supported_operations(*types, **kwargs)
+        )
+
     @keyword("Create Operation")
     def create_operation(
         self,
