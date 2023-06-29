@@ -581,6 +581,18 @@ class Cumulocity:
         """
         return self._convert_to_json(operation.assert_done(**kwargs))
 
+    @keyword("Operation Should Be EXECUTING")
+    def operation_assert_executing(self, operation: AssertOperation, **kwargs) -> str:
+        """Assert that the operation is set to EXECUTING
+
+        Args:
+            operation (AssertOperation): Operation
+
+        Returns:
+            str: Operation as json
+        """
+        return self._convert_to_json(operation.assert_executing(**kwargs))
+
     @keyword("Operation Should Be DELIVERED")
     def operation_assert_delivered(self, operation: AssertOperation, **kwargs) -> str:
         """Assert that the operation has been delivered via MQTT.
