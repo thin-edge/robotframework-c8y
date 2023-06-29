@@ -581,6 +581,19 @@ class Cumulocity:
         """
         return self._convert_to_json(operation.assert_done(**kwargs))
 
+    @keyword("Operation Should Not Be DONE")
+    def operation_assert_not_done(self, operation: AssertOperation, **kwargs) -> str:
+        """Assert that the operation is not set to either SUCCESSFUL or FAILED
+        (e.g. a final state)
+
+        Args:
+            operation (AssertOperation): Operation
+
+        Returns:
+            str: Operation as json
+        """
+        return self._convert_to_json(operation.assert_not_done(**kwargs))
+
     @keyword("Operation Should Be EXECUTING")
     def operation_assert_executing(self, operation: AssertOperation, **kwargs) -> str:
         """Assert that the operation is set to EXECUTING
