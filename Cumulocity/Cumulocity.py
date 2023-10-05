@@ -223,6 +223,7 @@ class Cumulocity:
         expected_contents: str = None,
         expected_pattern: str = None,
         expected_size_min: int = None,
+        expected_md5: str = None,
         encoding: str = None,
         **kwargs,
     ) -> bytes:
@@ -234,6 +235,8 @@ class Cumulocity:
             expected_pattern (str, optional): Expected attachment pattern to match.
                 Defaults to None.
             expected_size_min (int, optional): Minimum attachment size to expect.
+                Defaults to None.
+            expected_md5 (str, optional): Expected md5 checksum of the file attachment.
                 Defaults to None.
             encoding (str, optional): Attachment encoding to use when comparing content.
                 Defaults to None.
@@ -247,6 +250,7 @@ class Cumulocity:
             expected_contents=expected_contents,
             expected_pattern=expected_pattern,
             expected_size_min=expected_size_min,
+            expected_md5=expected_md5,
             **kwargs,
         )
 
