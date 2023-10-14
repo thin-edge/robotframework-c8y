@@ -236,8 +236,8 @@ class Cumulocity:
                 Defaults to None.
             expected_size_min (int, optional): Minimum attachment size to expect.
                 Defaults to None.
-            expected_md5 (str, optional): Expected md5 checksum of the file attachment.
-                Defaults to None.
+            expected_md5 (str, optional): Expected md5 checksum or a file that should be used
+                to calculated the md5 checksum from. Defaults to None.
             encoding (str, optional): Attachment encoding to use when comparing content.
                 Defaults to None.
 
