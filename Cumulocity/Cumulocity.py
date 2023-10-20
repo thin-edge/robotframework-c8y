@@ -537,43 +537,43 @@ class Cumulocity:
         return operation
 
     @keyword("Operation Should Be SUCCESSFUL")
-    def operation_assert_success(self, operation: AssertOperation, **kwargs) -> str:
+    def operation_assert_success(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
         """Assert that the operation is set to SUCCESSFUL
 
         Args:
             operation (AssertOperation): Operation
 
         Returns:
-            str: Operation as json
+            Dict[str, Any]: Operation
         """
         return self._convert_to_json(operation.assert_success(**kwargs))
 
     @keyword("Operation Should Be PENDING")
-    def operation_assert_pending(self, operation: AssertOperation, **kwargs) -> str:
+    def operation_assert_pending(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
         """Assert that the operation is set to PENDING
 
         Args:
             operation (AssertOperation): Operation
 
         Returns:
-            str: Operation as json
+            Dict[str, Any]: Operation
         """
         return self._convert_to_json(operation.assert_pending(**kwargs))
 
     @keyword("Operation Should Not Be PENDING")
-    def operation_assert_not_pending(self, operation: AssertOperation, **kwargs) -> str:
+    def operation_assert_not_pending(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
         """Assert that the operation is not set to PENDING
 
         Args:
             operation (AssertOperation): Operation
 
         Returns:
-            str: Operation as json
+            Dict[str, Any]: Operation
         """
         return self._convert_to_json(operation.assert_not_pending(**kwargs))
 
     @keyword("Operation Should Be DONE")
-    def operation_assert_done(self, operation: AssertOperation, **kwargs) -> str:
+    def operation_assert_done(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
         """Assert that the operation is set to either SUCCESSFUL or FAILED
         (e.g. a final state)
 
@@ -581,12 +581,12 @@ class Cumulocity:
             operation (AssertOperation): Operation
 
         Returns:
-            str: Operation as json
+            Dict[str, Any]: Operation
         """
         return self._convert_to_json(operation.assert_done(**kwargs))
 
     @keyword("Operation Should Not Be DONE")
-    def operation_assert_not_done(self, operation: AssertOperation, **kwargs) -> str:
+    def operation_assert_not_done(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
         """Assert that the operation is not set to either SUCCESSFUL or FAILED
         (e.g. a final state)
 
@@ -594,24 +594,24 @@ class Cumulocity:
             operation (AssertOperation): Operation
 
         Returns:
-            str: Operation as json
+            Dict[str, Any]: Operation
         """
         return self._convert_to_json(operation.assert_not_done(**kwargs))
 
     @keyword("Operation Should Be EXECUTING")
-    def operation_assert_executing(self, operation: AssertOperation, **kwargs) -> str:
+    def operation_assert_executing(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
         """Assert that the operation is set to EXECUTING
 
         Args:
             operation (AssertOperation): Operation
 
         Returns:
-            str: Operation as json
+            Dict[str, Any]: Operation
         """
         return self._convert_to_json(operation.assert_executing(**kwargs))
 
     @keyword("Operation Should Be DELIVERED")
-    def operation_assert_delivered(self, operation: AssertOperation, **kwargs) -> str:
+    def operation_assert_delivered(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
         """Assert that the operation has been delivered via MQTT.
         Only works if the agent is subscribed to the operations via mqtt
 
@@ -619,14 +619,14 @@ class Cumulocity:
             operation (AssertOperation): Operation
 
         Returns:
-            str: Operation as json
+            Dict[str, Any]: Operation
         """
         return self._convert_to_json(operation.assert_delivered(**kwargs))
 
     @keyword("Operation Should Be FAILED")
     def operation_assert(
         self, operation: AssertOperation, failure_reason: str = ".+", **kwargs
-    ) -> str:
+    ) -> Dict[str, Any]:
         """Assert that the operation is set to FAILED
 
         Args:
@@ -636,7 +636,7 @@ class Cumulocity:
                 failure reason when setting to FAILED.
 
         Returns:
-            str: Operation as json
+            Dict[str, Any]: Operation
         """
         return self._convert_to_json(
             operation.assert_failed(failure_reason=failure_reason, **kwargs)
@@ -669,7 +669,9 @@ class Cumulocity:
 
         return data
 
-    def _convert_to_json(self, item: any) -> Union[str, List[str]]:
+    def _convert_to_json(
+        self, item: any
+    ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         if isinstance(item, list):
             return [self._convert_item(subitem) for subitem in item]
 
@@ -752,11 +754,11 @@ class Cumulocity:
         )
 
     @keyword("Device Should Have A Child Devices")
-    def assert_child_device_names(self, *name: str, **kwargs) -> List[str]:
+    def assert_child_device_names(self, *name: str, **kwargs) -> List[Dict[str, Any]]:
         """Assert the presence of child devices and their matching names
 
         Returns:
-            List[str]: List of child devices json
+            List[Dict[str, Any]]: List of child devices
         """
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_child_device_names(*name, **kwargs)
@@ -765,7 +767,7 @@ class Cumulocity:
     @keyword("Device Should Have Measurements")
     def assert_measurement_count(
         self, minimum: int = 1, maximum: int = None, **kwargs
-    ) -> List[str]:
+    ) -> List[Dict[str, Any]]:
         """Assert measurement count
 
         Args:
@@ -773,7 +775,7 @@ class Cumulocity:
             maximum (int, optional): Maximum number of events to expect. Defaults to None.
 
         Returns:
-            List[str]: List of measurements as json
+            List[Dict[str, Any]]: List of measurements
 
         Example:
             |             | Command                         |   |                                                                              Result                                                                                                  |
@@ -804,13 +806,13 @@ class Cumulocity:
         self.device_mgmt.inventory.delete_device_and_user(managed_object)
 
     @keyword("Device Should Have Fragments")
-    def assert_contains_fragments(self, *fragments: str, **kwargs) -> str:
+    def assert_contains_fragments(self, *fragments: str, **kwargs) -> Dict[str, Any]:
         """
         Deprecated: Use "Managed Object Should Have Fragments" instead
         Assert that a device contains specific fragments
 
         Returns:
-            str: Managed object json
+            Dict[str, Any]: Managed object
         """
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_contains_fragments(fragments, **kwargs)
@@ -819,11 +821,11 @@ class Cumulocity:
     @keyword("Managed Object Should Have Fragments")
     def assert_managed_object_contains_fragments(
         self, *fragments: str, **kwargs
-    ) -> str:
+    ) -> Dict[str, Any]:
         """Assert that a device contains specific fragments
 
         Returns:
-            str: Managed object json
+            Dict[str, Any]: Managed object
         """
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_contains_fragments(fragments, **kwargs)
@@ -832,11 +834,11 @@ class Cumulocity:
     @keyword("Managed Object Should Not Have Fragments")
     def assert_managed_object_does_not_contain_fragments(
         self, *fragments: str, **kwargs
-    ) -> str:
+    ) -> Dict[str, Any]:
         """Assert that a device contains specific fragments
 
         Returns:
-            str: Managed object json
+            Dict[str, Any]: Managed object
         """
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_missing_fragments(fragments, **kwargs)
@@ -959,12 +961,12 @@ class Cumulocity:
     @keyword("Should Be A Child Device Of Device")
     def assert_child_device_relationship(
         self, external_id: str, external_id_type: str = "c8y_Serial", **kwargs
-    ) -> str:
+    ) -> Dict[str, Any]:
         """Assert that a child device (referenced via external identity)
         should be a child device of the current device context.
 
         Returns:
-            str: Managed object json
+            Dict[str, Any]: Managed object
         """
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_relationship(
@@ -973,7 +975,7 @@ class Cumulocity:
         )
 
     @keyword("Restart Device")
-    def restart_device(self, **kwargs) -> str:
+    def restart_device(self, **kwargs) -> AssertOperation:
         """Restart the device via an operation
 
         It does not wait for the operation to be completed. Use with the operation
@@ -1020,7 +1022,7 @@ class Cumulocity:
         external_type: str = "c8y_Serial",
         show_info: bool = True,
         **kwargs,
-    ) -> str:
+    ) -> Dict[str, Any]:
         """
         Deprecated: Please use "External Identity Should Exist" instead
         Assert that a device exists by checking its external identity
@@ -1030,7 +1032,7 @@ class Cumulocity:
             external_type (str, optional): External identity type. Defaults to "c8y_Serial".
 
         Returns:
-            str: Managed object json
+            Dict[str, Any]: Managed object
         """
         return self._managed_object_exists(
             external_id, external_type, show_info, **kwargs
@@ -1043,7 +1045,7 @@ class Cumulocity:
         external_type: str = "c8y_Serial",
         show_info: bool = True,
         **kwargs,
-    ) -> str:
+    ) -> Dict[str, Any]:
         """Assert that an external identity exists. It will return the associated managed object
 
         Args:
@@ -1051,7 +1053,7 @@ class Cumulocity:
             external_type (str, optional): External identity type. Defaults to "c8y_Serial".
 
         Returns:
-            str: Managed object json
+            Dict[str, Any]: Managed object
         """
         return self._managed_object_exists(
             external_id, external_type, show_info, **kwargs
