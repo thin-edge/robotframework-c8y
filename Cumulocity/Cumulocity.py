@@ -805,6 +805,21 @@ class Cumulocity:
 
     @keyword("Device Should Have Fragments")
     def assert_contains_fragments(self, *fragments: str, **kwargs) -> str:
+        """
+        Deprecated: Use "Managed Object Should Have Fragments" instead
+        Assert that a device contains specific fragments
+
+        Returns:
+            str: Managed object json
+        """
+        return self._convert_to_json(
+            self.device_mgmt.inventory.assert_contains_fragments(fragments, **kwargs)
+        )
+
+    @keyword("Managed Object Should Have Fragments")
+    def assert_managed_object_contains_fragments(
+        self, *fragments: str, **kwargs
+    ) -> str:
         """Assert that a device contains specific fragments
 
         Returns:
@@ -814,11 +829,53 @@ class Cumulocity:
             self.device_mgmt.inventory.assert_contains_fragments(fragments, **kwargs)
         )
 
+    @keyword("Managed Object Should Not Have Fragments")
+    def assert_managed_object_does_not_contain_fragments(
+        self, *fragments: str, **kwargs
+    ) -> str:
+        """Assert that a device contains specific fragments
+
+        Returns:
+            str: Managed object json
+        """
+        return self._convert_to_json(
+            self.device_mgmt.inventory.assert_missing_fragments(fragments, **kwargs)
+        )
+
+    @keyword("Managed Object Should Have Fragment Values")
+    def assert_managed_object_contains_fragment_values(
+        self, *properties: str, **kwargs
+    ) -> Dict[str, Any]:
+        """Assert that a managed object contains specific fragment values.
+
+        It supports referencing nested fragments via dot notation.
+
+        Examples:
+            | Device Should Have Fragment Values | status=down |
+            | Device Should Have Fragment Values | status=down | c8y_Hardware.serialNumber="abcdef 01234" |
+
+        Args:
+            properties (List[str]): List of key/values which correspond to fragments
+                and their values that are expected to be present
+
+        Returns:
+            Dict[str, Any]: Managed object
+        """
+
+        value_dict = self._create_dict(properties)
+        return self._convert_to_json(
+            self.device_mgmt.inventory.assert_contains_fragment_values(
+                value_dict, **kwargs
+            )
+        )
+
     @keyword("Device Should Have Fragment Values")
     def assert_contains_fragment_values(
         self, *properties: str, **kwargs
     ) -> Dict[str, Any]:
-        """Assert that a managed object contains specific fragment values.
+        """
+        Deprecated: Use "Managed Object Should Have Fragment Values" instead
+        Assert that a managed object contains specific fragment values.
 
         It supports referencing nested fragments via dot notation.
 
