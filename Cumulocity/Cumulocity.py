@@ -693,11 +693,10 @@ class Cumulocity:
     #
     # Devices / Child devices
     #
-    @keyword("Set Device")
-    def set_device(
+    def _set_managed_object_context(
         self, external_id: str = None, external_type: str = "c8y_Serial", **kwargs
-    ) -> str:
-        """Set the device context which will be used for subsequent keywords
+    ):
+        """Set the managed object context which will be used for subsequent keywords
 
         Args:
             external_id (str, optional): External identity. Defaults to None.
@@ -706,7 +705,6 @@ class Cumulocity:
         Returns:
             str: Managed object json
         """
-
         identity = self.device_mgmt.identity.assert_exists(
             external_id, external_type, **kwargs
         )
@@ -714,6 +712,43 @@ class Cumulocity:
 
         return self._convert_to_json(
             self.device_mgmt.inventory.assert_exists(identity.id),
+        )
+
+    @keyword("Set Device")
+    def set_device(
+        self, external_id: str = None, external_type: str = "c8y_Serial", **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Deprecated: This function will be removed in the future. Please use "Set Managed Object" instead.
+
+        Set the device context which will be used for subsequent keywords
+
+        Args:
+            external_id (str, optional): External identity. Defaults to None.
+            external_type (str, optional): External identity type. Defaults to "c8y_Serial".
+
+        Returns:
+            Dict[str, Any]: Managed object json
+        """
+        return self._set_managed_object_context(
+            external_id=external_id, external_type=external_type, **kwargs
+        )
+
+    @keyword("Set Managed Object")
+    def set_managed_object(
+        self, external_id: str = None, external_type: str = "c8y_Serial", **kwargs
+    ) -> Dict[str, Any]:
+        """Set the managed object context which will be used for subsequent keywords
+
+        Args:
+            external_id (str, optional): External identity. Defaults to None.
+            external_type (str, optional): External identity type. Defaults to "c8y_Serial".
+
+        Returns:
+            Dict[str, Any]: Managed object json
+        """
+        return self._set_managed_object_context(
+            external_id=external_id, external_type=external_type, **kwargs
         )
 
     @keyword("Device Should Have A Child Devices")
@@ -892,23 +927,13 @@ class Cumulocity:
         """
         return self.device_mgmt.restart(**kwargs)
 
-    @keyword("Device Should Exist")
-    def assert_device_exists(
+    def _managed_object_exists(
         self,
         external_id: str,
         external_type: str = "c8y_Serial",
         show_info: bool = True,
         **kwargs,
-    ) -> str:
-        """Assert that a device exists by checking its external identity
-
-        Args:
-            external_id (str): External identity
-            external_type (str, optional): External identity type. Defaults to "c8y_Serial".
-
-        Returns:
-            str: Managed object json
-        """
+    ):
         identity = self.device_mgmt.identity.assert_exists(
             external_id, external_type, **kwargs
         )
@@ -924,12 +949,56 @@ class Cumulocity:
                 ]
             )
             logger.info("-" * 60)
-            logger.info("DEVICE SERIAL  : %s", external_id)
-            logger.info("DEVICE ID      : %s", identity.id)
-            logger.info("DEVICE URL     : %s", mgmt_url)
+            logger.info("EXTERNAL SERIAL  : %s", external_id)
+            logger.info("EXTERNAL ID      : %s", identity.id)
+            logger.info("EXTERNAL URL     : %s", mgmt_url)
             logger.info("-" * 60)
 
         return self._convert_to_json(self.device_mgmt.inventory.assert_exists())
+
+    @keyword("Device Should Exist")
+    def device_should_exist(
+        self,
+        external_id: str,
+        external_type: str = "c8y_Serial",
+        show_info: bool = True,
+        **kwargs,
+    ) -> str:
+        """
+        Deprecated: Please use "External Identity Should Exist" instead
+        Assert that a device exists by checking its external identity
+
+        Args:
+            external_id (str): External identity
+            external_type (str, optional): External identity type. Defaults to "c8y_Serial".
+
+        Returns:
+            str: Managed object json
+        """
+        return self._managed_object_exists(
+            external_id, external_type, show_info, **kwargs
+        )
+
+    @keyword("External Identity Should Exist")
+    def managed_object_should_exist(
+        self,
+        external_id: str,
+        external_type: str = "c8y_Serial",
+        show_info: bool = True,
+        **kwargs,
+    ) -> str:
+        """Assert that an external identity exists. It will return the associated managed object
+
+        Args:
+            external_id (str): External identity
+            external_type (str, optional): External identity type. Defaults to "c8y_Serial".
+
+        Returns:
+            str: Managed object json
+        """
+        return self._managed_object_exists(
+            external_id, external_type, show_info, **kwargs
+        )
 
     @keyword("Log Device Info")
     def show_device_information(self, device_id: str = None, **kwargs):
