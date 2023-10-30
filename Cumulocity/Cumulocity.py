@@ -345,7 +345,9 @@ class Cumulocity:
             ManagedObject: Managed object
         """
         supported_types = self.device_mgmt.logs.assert_supported_types(
-            types, includes=includes, **kwargs,
+            types,
+            includes=includes,
+            **kwargs,
         )
         return supported_types
 
@@ -362,7 +364,7 @@ class Cumulocity:
         """Create a log file request operation c8y_LogfileRequest
 
         Examples:
-        
+
         | ${op}= | Get Log File | type=mosquitto |
         | ${date_from} =       | Get Current Date | UTC | - 5 hours | result_format=datetime  |
         | ${op}= | Get Log File | type=mosquitto | date_from=${date_from} |
@@ -607,7 +609,9 @@ class Cumulocity:
         return operation
 
     @keyword("Operation Should Be SUCCESSFUL")
-    def operation_assert_success(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
+    def operation_assert_success(
+        self, operation: AssertOperation, **kwargs
+    ) -> Dict[str, Any]:
         """Assert that the operation is set to SUCCESSFUL
 
         Args:
@@ -619,7 +623,9 @@ class Cumulocity:
         return self._convert_to_json(operation.assert_success(**kwargs))
 
     @keyword("Operation Should Be PENDING")
-    def operation_assert_pending(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
+    def operation_assert_pending(
+        self, operation: AssertOperation, **kwargs
+    ) -> Dict[str, Any]:
         """Assert that the operation is set to PENDING
 
         Args:
@@ -631,7 +637,9 @@ class Cumulocity:
         return self._convert_to_json(operation.assert_pending(**kwargs))
 
     @keyword("Operation Should Not Be PENDING")
-    def operation_assert_not_pending(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
+    def operation_assert_not_pending(
+        self, operation: AssertOperation, **kwargs
+    ) -> Dict[str, Any]:
         """Assert that the operation is not set to PENDING
 
         Args:
@@ -643,7 +651,9 @@ class Cumulocity:
         return self._convert_to_json(operation.assert_not_pending(**kwargs))
 
     @keyword("Operation Should Be DONE")
-    def operation_assert_done(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
+    def operation_assert_done(
+        self, operation: AssertOperation, **kwargs
+    ) -> Dict[str, Any]:
         """Assert that the operation is set to either SUCCESSFUL or FAILED
         (e.g. a final state)
 
@@ -656,7 +666,9 @@ class Cumulocity:
         return self._convert_to_json(operation.assert_done(**kwargs))
 
     @keyword("Operation Should Not Be DONE")
-    def operation_assert_not_done(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
+    def operation_assert_not_done(
+        self, operation: AssertOperation, **kwargs
+    ) -> Dict[str, Any]:
         """Assert that the operation is not set to either SUCCESSFUL or FAILED
         (e.g. a final state)
 
@@ -669,7 +681,9 @@ class Cumulocity:
         return self._convert_to_json(operation.assert_not_done(**kwargs))
 
     @keyword("Operation Should Be EXECUTING")
-    def operation_assert_executing(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
+    def operation_assert_executing(
+        self, operation: AssertOperation, **kwargs
+    ) -> Dict[str, Any]:
         """Assert that the operation is set to EXECUTING
 
         Args:
@@ -681,7 +695,9 @@ class Cumulocity:
         return self._convert_to_json(operation.assert_executing(**kwargs))
 
     @keyword("Operation Should Be DELIVERED")
-    def operation_assert_delivered(self, operation: AssertOperation, **kwargs) -> Dict[str, Any]:
+    def operation_assert_delivered(
+        self, operation: AssertOperation, **kwargs
+    ) -> Dict[str, Any]:
         """Assert that the operation has been delivered via MQTT.
         Only works if the agent is subscribed to the operations via mqtt
 
