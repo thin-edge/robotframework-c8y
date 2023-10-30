@@ -6,6 +6,7 @@ import logging
 from typing import List, Union, Dict, Any
 import json
 import re
+from datetime import datetime
 
 from dotmap import DotMap
 from dotenv import load_dotenv
@@ -313,6 +314,75 @@ class Cumulocity:
     def set_configuration(self, typename: str, url: str, **kwargs):
         operation = self.device_mgmt.configuration.set_configuration(
             Configuration(type=typename, url=url),
+            **kwargs,
+        )
+        return operation
+
+    #
+    # Log File
+    #
+    @keyword("Should Support Log File Types")
+    def should_support_logfile_types(
+        self, *types: str, includes: bool = False, **kwargs
+    ) -> List[str]:
+        """Assert presence of some supported log file types by checking the c8y_SupportedLogs
+        fragment of the inventory managed object.
+
+        It will only check if the given supported log file types exist, other supported log file
+        types are allowed to also exist which are not included in the assertion.
+
+        Examples:
+
+        | ${mo}= | Should Support Log File Types | myapp1 |
+        | ${mo}= | Should Support Log File Types | myapp1 | myapp2 | include=${False} |
+
+        Args:
+            *types (str): List of expected supported operations
+            include (bool): Only check if the given types are included
+                and don't fail if additional types are found
+
+        Returns:
+            ManagedObject: Managed object
+        """
+        supported_types = self.device_mgmt.logs.assert_supported_types(
+            types, includes=includes, **kwargs,
+        )
+        return supported_types
+
+    @keyword("Get Log File")
+    def get_logfile(
+        self,
+        type: str,
+        date_from: datetime = None,
+        date_to: datetime = None,
+        maximum_lines: int = 100,
+        search_text: str = "",
+        **kwargs,
+    ) -> AssertOperation:
+        """Create a log file request operation c8y_LogfileRequest
+
+        Examples:
+        
+        | ${op}= | Get Log File | type=mosquitto |
+        | ${date_from} =       | Get Current Date | UTC | - 5 hours | result_format=datetime  |
+        | ${op}= | Get Log File | type=mosquitto | date_from=${date_from} |
+
+        Args:
+            type (str): Log file type
+            date_from (datetime, optional): Only include log entries from a specific date. Defaults to now - 1 day
+            date_to (datetime, optional): Only include log entries to a specific date. Defaults to now
+            maximum_lines (int, optional): Maximum number of log entries
+            search_text (str, optional): Only include log entries matching a specific pattern. Defaults to ""
+
+        Returns:
+            AssertOperation: Operation assertion
+        """
+        operation = self.device_mgmt.logs.get_logfile(
+            type=type,
+            date_from=date_from,
+            date_to=date_to,
+            maximum_lines=maximum_lines,
+            search_text=search_text,
             **kwargs,
         )
         return operation
