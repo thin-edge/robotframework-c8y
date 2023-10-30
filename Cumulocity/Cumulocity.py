@@ -345,7 +345,7 @@ class Cumulocity:
             ManagedObject: Managed object
         """
         supported_types = self.device_mgmt.logs.assert_supported_types(
-            types,
+            *types,
             includes=includes,
             **kwargs,
         )
