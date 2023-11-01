@@ -444,6 +444,35 @@ class Cumulocity:
             )
         )
 
+    @keyword("Device Should Not Have Installed Software")
+    def software_assert_not_installed(
+        self, *expected_software_list: str, mo: str = None, **kwargs
+    ) -> Dict[str, Dict[str, Any]]:
+        """Assert that software packages are not installed (in the c8y_SoftwareList fragment)
+
+        Examples:
+
+            | ${software}= | Device Should Not Have Installed Software | package-001 | package-002,1.0.0 |
+            | Should Not Contain | ${software} | package-001 |
+
+        Args:
+            mo (str, optional): Device Managed object. Defaults to None.
+                If set to None, then the current device managed object context
+                will be used.
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Managed object json
+        """
+        items = self._software_format_list(*expected_software_list)
+
+        return self._convert_to_json(
+            self.device_mgmt.software_management.assert_not_software_installed(
+                *items,
+                mo=mo,
+                **kwargs,
+            )
+        )
+
     @keyword("Install Software")
     def software_install(self, *software_list: str, **kwargs) -> AssertOperation:
         """Install software via an operation
