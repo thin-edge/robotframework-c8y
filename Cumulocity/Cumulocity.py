@@ -12,6 +12,7 @@ from dotmap import DotMap
 from dotenv import load_dotenv
 from c8y_test_core.assert_operation import AssertOperation
 from c8y_test_core.c8y import CustomCumulocityApp
+from c8y_test_core.assert_software_management import SoftwareManagement
 from c8y_test_core.device_management import (
     DeviceManagement,
     create_context_from_identity,
@@ -392,7 +393,9 @@ class Cumulocity:
     #
     # Software
     #
-    def _software_format_list(self, *items: str) -> List[Software]:
+    def _software_format_list(
+        self, *items: str, default_action: str = SoftwareManagement.Action.INSTALL
+    ) -> List[Software]:
         """Convert a list of strings to a list of Software items.
         Each item in the list should be a csv string in the format
         of "<name>,<version>,<url>".
@@ -402,7 +405,13 @@ class Cumulocity:
         Returns:
             List[Software]: List of software
         """
-        return [Software(*item.split(",", 3)) for item in items if item]
+        software_items = []
+        for item in items:
+            software_item = Software(*item.split(",", 4))
+            if not software_item.action and default_action:
+                software_item.action = default_action
+            software_items.append(software_item)
+        return software_items
 
     @keyword("Device Should Have Installed Software")
     def software_assert_installed(
@@ -447,6 +456,45 @@ class Cumulocity:
         """
         items = self._software_format_list(*software_list)
         operation = self.device_mgmt.software_management.install(
+            *items,
+            **kwargs,
+        )
+        return operation
+
+    @keyword("Install/Uninstall Software")
+    def software_update(self, *software_list: str, **kwargs) -> AssertOperation:
+        """Install and Uninstall software via a single operation
+
+        software_list is provided in a csv format of:
+            <name>,<version>,<url>,<action>
+
+        Where, <action> is either "install" or "delete"
+
+        Examples:
+        | ${operation} | Install/Uninstall Software | c8y-command-plugin,latest::apt,,install | tedge-container-plugin,,,delete |
+
+        Returns:
+            AssertOperation: Operation
+        """
+        items = self._software_format_list(*software_list)
+        operation = self.device_mgmt.software_management.update(
+            *items,
+            **kwargs,
+        )
+        return operation
+
+    @keyword("Uninstall Software")
+    def software_uninstall(self, *software_list: str, **kwargs) -> AssertOperation:
+        """Uninstall software via an operation
+
+        It does not wait for the operation to be completed. Use with the operation
+        keywords to check if the operation was successful or not.
+
+        Returns:
+            AssertOperation: Operation
+        """
+        items = self._software_format_list(*software_list)
+        operation = self.device_mgmt.software_management.remove(
             *items,
             **kwargs,
         )
