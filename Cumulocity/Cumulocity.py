@@ -73,6 +73,9 @@ class Cumulocity:
     # Default parameter settings
     DEFAULT_TIMEOUT = 30
 
+    # Default HTTP request timeout
+    DEFAULT_REQUEST_TIMEOUT = 30.0
+
     # Class-internal parameters
     device_mgmt: DeviceManagement = None
     c8y: CustomCumulocityApp = None
@@ -81,13 +84,14 @@ class Cumulocity:
     def __init__(
         self,
         timeout: str = DEFAULT_TIMEOUT,
+        request_timeout = DEFAULT_REQUEST_TIMEOUT,
     ):
         self.devices = {}
         self._on_cleanup = []
         load_dotenv()
 
         try:
-            self.c8y = CustomCumulocityApp()
+            self.c8y = CustomCumulocityApp(timeout=request_timeout)
         except Exception as ex:
             logger.warning(
                 "Could not load Cumulocity API client. Trying to continue. %s",
