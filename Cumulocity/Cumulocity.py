@@ -40,6 +40,16 @@ def is_dot_notation(key: str) -> bool:
     return re.match(r"^[\w.\-: ]+$", key, re.IGNORECASE) is not None
 
 
+def try_parse_json(value: Any, default=str) -> Any:
+    """Try parsing an input value that might be json, and
+    fallback to a given type on errors
+    """
+    try:
+        return json.loads(value)
+    except ValueError:
+        return default(value)
+
+
 ASSERTION_MAPPING = {
     "assert_count": "Device Should Have %s/s",
     "assert_exists": "%s Should Exist",
@@ -84,7 +94,7 @@ class Cumulocity:
     def __init__(
         self,
         timeout: str = DEFAULT_TIMEOUT,
-        request_timeout = DEFAULT_REQUEST_TIMEOUT,
+        request_timeout=DEFAULT_REQUEST_TIMEOUT,
     ):
         self.devices = {}
         self._on_cleanup = []
@@ -411,7 +421,16 @@ class Cumulocity:
         """
         software_items = []
         for item in items:
-            software_item = Software(*item.split(",", 4))
+            raw_item = try_parse_json(item, str)
+            if isinstance(raw_item, str):
+                software_item = Software(*raw_item.split(",", 5))
+            elif isinstance(raw_item, dict):
+                software_item = Software(**raw_item)
+            else:
+                raise ValueError(
+                    "Invalid software item definition. Only csv string or json dictionary are accepted"
+                )
+
             if not software_item.action and default_action:
                 software_item.action = default_action
             software_items.append(software_item)
@@ -419,13 +438,16 @@ class Cumulocity:
 
     @keyword("Device Should Have Installed Software")
     def software_assert_installed(
-        self, *expected_software_list: str, mo: str = None, **kwargs
+        self,
+        *expected_software_list: Union[str, Dict[str, Any]],
+        mo: str = None,
+        **kwargs,
     ) -> Dict[str, Dict[str, Any]]:
         """Assert that software packages are installed (in the c8y_SoftwareList fragment)
 
         Examples:
-
             | ${software}= | Device Should Have Installed Software | package-001 | package-002,1.0.0 |
+            | ${software}= | Device Should Have Installed Software | {"name": "package-001", "version": "1.0.0", "type": "apt","url":"http://example.com/mypackage"} | {"name": "package-002", "version": "2.0.0"} |
             | Length Should Be | ${software} | 1000 |
             | Should Contain | ${software} | package-001 |
             | Should Be Equal | ${software["package-002"]["version"]} | 1.0.0 |
