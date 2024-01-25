@@ -1269,7 +1269,7 @@ class Cumulocity:
             device_id = self.device_mgmt.context.device_id
 
         if not device_id:
-            logger.warning("No device has been set, nothing to do")
+            logger.info("No device has been set, nothing to do")
             return
 
         managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
