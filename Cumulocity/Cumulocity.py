@@ -953,6 +953,11 @@ class Cumulocity:
             self.device_mgmt.inventory.assert_child_device_names(*name, **kwargs)
         )
 
+    @keyword("Device Should Not Have Any Child Devices")
+    def assert_no_child_devices(self, **kwargs):
+        """Assert that a device does not have any child devices"""
+        self.device_mgmt.inventory.assert_no_child_devices(**kwargs)
+
     @keyword("Device Should Have Measurements")
     def assert_measurement_count(
         self, minimum: int = 1, maximum: int = None, **kwargs
