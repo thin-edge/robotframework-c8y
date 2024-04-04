@@ -284,13 +284,13 @@ class Cumulocity:
         )
 
     @keyword("Event Attachment Should Have File Info")
-    def event_assert_attachment_filename(
+    def event_assert_attachment_file_info(
         self,
         event: Union[Event, str],
         name: str = ".+",
         mime_type: str = ".+",
         **kwargs,
-    ):
+    ) -> Dict[str, Any]:
         """Assert that an event attachment has file information
         such as filename and mime type.
 
@@ -305,13 +305,15 @@ class Cumulocity:
             mime_type (str): MIME type pattern (regex)
 
         Returns:
-            event: Event used in the assertion
+            Dict[str, Any]: Event used in the assertion
         """
-        return self.device_mgmt.events.assert_attachment_info(
-            event=event,
-            expected_name_pattern=name,
-            expected_type_pattern=mime_type,
-            **kwargs,
+        return self._convert_to_json(
+            self.device_mgmt.events.assert_attachment_info(
+                event=event,
+                expected_name_pattern=name,
+                expected_type_pattern=mime_type,
+                **kwargs,
+            )
         )
 
     #
