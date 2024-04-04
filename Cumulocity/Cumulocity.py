@@ -17,6 +17,7 @@ from c8y_test_core.device_management import (
     DeviceManagement,
     create_context_from_identity,
 )
+from c8y_test_core.assert_events import Event
 from c8y_test_core.models import Software, Configuration, Firmware
 from robot.api.deco import keyword, library
 from robot.utils.asserts import fail
@@ -279,6 +280,37 @@ class Cumulocity:
         """
         self.device_mgmt.events.assert_no_attachment(
             event_id=event_id,
+            **kwargs,
+        )
+
+    @keyword("Event Attachment Should Have File Info")
+    def event_assert_attachment_filename(
+        self,
+        event: Union[Event, str],
+        name: str = ".+",
+        mime_type: str = ".+",
+        **kwargs,
+    ):
+        """Assert that an event attachment has file information
+        such as filename and mime type.
+
+        Examples:
+
+        | ${mo}= | Event Attachment Should Have File Info | event=1234 | name=myfile\.txt |
+        | ${mo}= | Event Attachment Should Have File Info | event={"id":"1234"} | name=myfile\.txt | mime_type=text/plain |
+
+        Args:
+            event (Union[Event, str]): Event id or event object
+            name (str): File Name pattern (regex)
+            mime_type (str): MIME type pattern (regex)
+
+        Returns:
+            event: Event used in the assertion
+        """
+        return self.device_mgmt.events.assert_attachment_info(
+            event=event,
+            expected_name_pattern=name,
+            expected_type_pattern=mime_type,
             **kwargs,
         )
 
