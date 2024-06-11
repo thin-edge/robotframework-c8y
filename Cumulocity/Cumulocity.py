@@ -930,13 +930,12 @@ class Cumulocity:
         Returns:
             str: Managed object json
         """
-        identity = self.device_mgmt.identity.assert_exists(
+        managed_object = self.device_mgmt.identity.assert_exists(
             external_id, external_type, **kwargs
         )
-        self.device_mgmt.set_device_id(identity.id)
-
+        self.device_mgmt.set_device_id(managed_object.id)
         return self._convert_to_json(
-            self.device_mgmt.inventory.assert_exists(identity.id),
+            managed_object,
         )
 
     @keyword("Set Device")
@@ -1221,27 +1220,27 @@ class Cumulocity:
         show_info: bool = True,
         **kwargs,
     ):
-        identity = self.device_mgmt.identity.assert_exists(
+        managed_object = self.device_mgmt.identity.assert_exists(
             external_id, external_type, **kwargs
         )
-        self.device_mgmt.set_device_id(identity.id)
+        self.device_mgmt.set_device_id(managed_object.id)
 
         if show_info:
             mgmt_url = "/".join(
                 [
                     self.device_mgmt.c8y.base_url,
                     "apps/devicemanagement/index.html#/device",
-                    identity.id,
+                    managed_object.id,
                     "control",
                 ]
             )
             logger.info("-" * 60)
             logger.info("EXTERNAL SERIAL  : %s", external_id)
-            logger.info("EXTERNAL ID      : %s", identity.id)
+            logger.info("EXTERNAL ID      : %s", managed_object.id)
             logger.info("EXTERNAL URL     : %s", mgmt_url)
             logger.info("-" * 60)
 
-        return self._convert_to_json(self.device_mgmt.inventory.assert_exists())
+        return self._convert_to_json(managed_object)
 
     @keyword("Device Should Exist")
     def device_should_exist(
