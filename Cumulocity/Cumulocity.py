@@ -3,7 +3,7 @@
 """
 
 import logging
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Optional
 import json
 import re
 from datetime import datetime
@@ -672,6 +672,65 @@ class Cumulocity:
     #
     # Operations
     #
+    @keyword("Should Have Operations")
+    def operation_assert_count(
+        self,
+        min_count: Optional[int] = 1,
+        max_count: Optional[int] = None,
+        *,
+        fragment: Optional[str] = None,
+        status: Optional[str] = None,
+        device_id: Optional[str] = None,
+        **kwargs,
+    ) -> List[Dict[str, Any]]:
+        """Assert an operations count given some filter criteria
+
+        Examples:
+
+        | ${ops}= | Should Have Operations | min_count=1 |
+        | ${ops}= | Should Have Operations | min_count=0 | min_count=0 | status=PENDING | fragment=c8y_RemoteAccessConnect |
+        | ${ops}= | Should Have Operations | min_count=0 | min_count=0 | status=EXECUTING | fragment=c8y_RemoteAccessConnect |
+        """
+        return self._convert_to_json(
+            self.device_mgmt.operations.assert_count(
+                min_count=min_count,
+                max_count=max_count,
+                fragment=fragment,
+                status=status,
+                device_id=device_id,
+                **kwargs,
+            )
+        )
+
+    @keyword("Should Only Have Completed Operations")
+    def operation_assert_only_completed(
+        self,
+        min_count: Optional[int] = 1,
+        max_count: Optional[int] = None,
+        *,
+        fragment: Optional[str] = None,
+        status: Optional[str] = None,
+        device_id: Optional[str] = None,
+        **kwargs,
+    ):
+        """Assert that all operations have been completed
+        e.g. no operations are in PENDING or EXECUTING status.
+
+        Examples:
+
+        | ${ops}= | Should Have Only Completed Operations |
+        """
+        return self._convert_to_json(
+            self.device_mgmt.operations.assert_all_completed(
+                min_count=min_count,
+                max_count=max_count,
+                fragment=fragment,
+                status=status,
+                device_id=device_id,
+                **kwargs,
+            )
+        )
+
     @keyword("Should Contain Supported Operations")
     def operation_assert_contains_supported_operations(
         self, *types: str, **kwargs
