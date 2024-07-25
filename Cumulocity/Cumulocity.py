@@ -705,11 +705,7 @@ class Cumulocity:
     @keyword("Should Only Have Completed Operations")
     def operation_assert_only_completed(
         self,
-        min_count: Optional[int] = 1,
-        max_count: Optional[int] = None,
         *,
-        fragment: Optional[str] = None,
-        status: Optional[str] = None,
         device_id: Optional[str] = None,
         **kwargs,
     ):
@@ -722,10 +718,6 @@ class Cumulocity:
         """
         return self._convert_to_json(
             self.device_mgmt.operations.assert_all_completed(
-                min_count=min_count,
-                max_count=max_count,
-                fragment=fragment,
-                status=status,
                 device_id=device_id,
                 **kwargs,
             )
