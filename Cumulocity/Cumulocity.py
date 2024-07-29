@@ -1470,7 +1470,7 @@ class Cumulocity:
 
             | Register Device With Basic Auth | MyCustomDevice0001 |
         """
-        return self.device_mgmt.registration.bulk_register_with_basic_auth(
+        return self.device_mgmt.registration.register_with_basic_auth(
             external_id=external_id,
             timeout=timeout,
             **kwargs,
