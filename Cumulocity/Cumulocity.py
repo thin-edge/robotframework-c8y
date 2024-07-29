@@ -12,6 +12,7 @@ from dotmap import DotMap
 from dotenv import load_dotenv
 from c8y_test_core.assert_operation import AssertOperation
 from c8y_test_core.c8y import CustomCumulocityApp
+from c8y_test_core.assert_device_registration import DeviceCredentials
 from c8y_test_core.assert_software_management import SoftwareManagement
 from c8y_test_core.device_management import (
     DeviceManagement,
@@ -1410,6 +1411,69 @@ class Cumulocity:
                 status=status,
                 **kwargs,
             )
+        )
+
+    #
+    # Device registration
+    #
+    @keyword("Bulk Register Device With Basic Auth")
+    def bulk_register_device_with_basic_auth(
+        self,
+        external_id: str,
+        external_type: Optional[str] = "c8y_Serial",
+        name: Optional[str] = None,
+        device_type: Optional[str] = "thin-edge.io",
+        **kwargs,
+    ) -> DeviceCredentials:
+        """Bulk device registration for device that require
+        non-cert based authentication (e.g. basic auth)
+
+        Arguments:
+            external_id (str): External id
+            external_type (str): External type. Defaults to c8y_Serial
+            name (Optional[str]): Name of the device. Defaults to the external_id
+            type (Optional[str]): Type of the device. Defaults to thin-edge.io
+
+        Examples:
+
+            | ${CREDENTIALS}= | Bulk Register Device With Basic Auth | MyCustomDevice0001 |
+            | ${CREDENTIALS}= | Bulk Register Device With Basic Auth | MyCustomDevice0001 | name=Custom Name | device_type=linuxA |
+
+        """
+        return self.device_mgmt.registration.bulk_register_with_basic_auth(
+            external_id=external_id,
+            external_type=external_type,
+            name=name,
+            device_type=device_type,
+            **kwargs,
+        )
+
+    @keyword("Register Device With Basic Auth")
+    def register_device_with_basic_auth(
+        self,
+        external_id: str,
+        timeout: float = 60,
+        **kwargs,
+    ):
+        """Register a single device using the basic auth
+
+        For the registration to work, the device must be polling the
+        POST /devicecontrol/newDeviceRequests/{external_id} endpoint in the background.
+        Once the request is approved by this function, the device will receive
+        platform credentials.
+
+        Arguments:
+            external_id (str): external id of the device to be registered
+            timeout (float): Timeout in seconds. Defaults to 60
+
+        Examples:
+
+            | Register Device With Basic Auth | MyCustomDevice0001 |
+        """
+        return self.device_mgmt.registration.bulk_register_with_basic_auth(
+            external_id=external_id,
+            timeout=timeout,
+            **kwargs,
         )
 
 
