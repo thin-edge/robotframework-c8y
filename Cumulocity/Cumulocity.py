@@ -968,6 +968,46 @@ class Cumulocity:
         self.device_mgmt.configure_retries(timeout=timeout)
 
     #
+    # Inventory/Device Profiles 
+    # 
+    @keyword("Create Device Profile")
+    def create_device_profile(
+        self,
+        profile_id: str,
+        profile_name: str,
+        **kwargs,
+    ) -> Dict[str, Any]:
+        """Create a new device profile in Cumulocity
+
+        Args:
+            profile_id (str): Unique identifier for the device profile
+            profile_name (str): Name of the device profile
+
+        Example:
+        | Command                                             |
+        | Create Device Profile    profile_Id    profile_Name |
+
+        Returns:
+            Dict[str, Any]: The created device profile as a managed object
+        """
+        profile_body = {
+            "type": "c8y_Profile",
+            "name": profile_name,
+            "c8y_DeviceProfile": {},
+            "c8y_Filter": {"profileId": profile_id},
+        }
+        
+        url = f"{self.c8y.base_url}/inventory/managedObjects"
+        
+        response = self.c8y.session.post(
+            url,
+            json=profile_body
+        )
+        response.raise_for_status()
+        
+        return response.json()
+
+    #
     # Devices / Child devices
     #
     def _set_managed_object_context(
