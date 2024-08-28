@@ -1476,6 +1476,77 @@ class Cumulocity:
             **kwargs,
         )
 
+    @keyword("Create Device Profile")
+    def create_device_profile(
+        self, name: str, profile: Optional[Union[Dict[str, Any], str]] = None
+    ):
+        """Create a device profile definition in the repository
+
+        Examples:
+
+            | ${mo}= | Create Device Profile | {"firmware":{"name":"linux","version":"1.0.0","url":"example.com"}, "software":[{"name":""}],"configuration":[{"type":"example","url":"https://example.com/myfile"}]} |
+        """
+        if isinstance(profile, str):
+            profile = json.loads(profile)
+
+        return self._convert_to_json(
+            self.device_mgmt.device_profile.create(name, profile=profile)
+        )
+
+    @keyword("Install Device Profile")
+    def install_device_profile(
+        self, profile_id: str, device_id: Optional[str] = None, **kwargs
+    ) -> AssertOperation:
+        """Install/Apply a device profile to a device
+
+        Examples:
+
+            | ${operation}= | Install Device Profile | profile_id=1234 |
+            | ${operation}= | Install Device Profile | profile_id=1111 | device_id=2222 |
+        """
+        return self.device_mgmt.device_profile.apply(
+            profile_id=profile_id,
+            device_id=device_id or self.device_mgmt.context.device_id,
+        )
+
+    @keyword("Should Have Device Profile Installed")
+    def assert_device_profile_installed(
+        self, profile_id: str, device_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Assert that a device profile is installed on a device.
+
+        Note: Only the c8y_Profile fragment is used to determine if the profile is installed or not
+
+        Examples:
+            | Should Have Device Profile Installed | profile_id=1234 |
+            | Should Have Device Profile Installed | profile_id=1111 | device_id=2222 |
+        """
+        if device_id is None:
+            device_id = self.device_mgmt.context.device_id
+        managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
+        self.device_mgmt.device_profile.assert_installed(
+            profile_id=profile_id, mo=managed_object
+        )
+
+    @keyword("Should Not Have Device Profile Installed")
+    def assert_device_profile_not_installed(
+        self, profile_id: str, device_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Assert that a device profile is not installed on a device.
+
+        Note: Only the c8y_Profile fragment is used to determine if the profile is installed or not
+
+        Examples:
+            | Should Not Have Device Profile Installed | profile_id=1234 |
+            | Should Not Have Device Profile Installed | profile_id=1111 | device_id=2222 |
+        """
+        if device_id is None:
+            device_id = self.device_mgmt.context.device_id
+        managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
+        self.device_mgmt.device_profile.assert_not_installed(
+            profile_id=profile_id, mo=managed_object
+        )
+
 
 if __name__ == "__main__":
     pass
