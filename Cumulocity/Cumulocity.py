@@ -297,8 +297,8 @@ class Cumulocity:
 
         Examples:
 
-        | ${mo}= | Event Attachment Should Have File Info | event=1234 | name=myfile\.txt |
-        | ${mo}= | Event Attachment Should Have File Info | event={"id":"1234"} | name=myfile\.txt | mime_type=text/plain |
+        | ${mo}= | Event Attachment Should Have File Info | event=1234 | name=myfile\\.txt |
+        | ${mo}= | Event Attachment Should Have File Info | event={"id":"1234"} | name=myfile\\.txt | mime_type=text/plain |
 
         Args:
             event (Union[Event, str]): Event id or event object
