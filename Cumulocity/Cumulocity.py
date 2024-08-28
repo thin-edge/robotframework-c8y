@@ -1532,8 +1532,10 @@ class Cumulocity:
         if device_id is None:
             device_id = self.device_mgmt.context.device_id
         managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
-        self.device_mgmt.device_profile.assert_installed(
-            profile_id=profile_id, mo=managed_object
+        return self._convert_to_json(
+            self.device_mgmt.device_profile.assert_installed(
+                profile_id=profile_id, mo=managed_object
+            )
         )
 
     @keyword("Should Not Have Device Profile Installed")
@@ -1551,8 +1553,10 @@ class Cumulocity:
         if device_id is None:
             device_id = self.device_mgmt.context.device_id
         managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
-        self.device_mgmt.device_profile.assert_not_installed(
-            profile_id=profile_id, mo=managed_object
+        return self._convert_to_json(
+            self.device_mgmt.device_profile.assert_not_installed(
+                profile_id=profile_id, mo=managed_object
+            )
         )
 
 
