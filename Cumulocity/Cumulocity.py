@@ -1478,20 +1478,28 @@ class Cumulocity:
 
     @keyword("Create Device Profile")
     def create_device_profile(
-        self, name: str, profile: Optional[Union[Dict[str, Any], str]] = None
+        self,
+        name: str,
+        profile: Optional[Union[Dict[str, Any], str]] = None,
+        auto_delete: bool = True,
     ):
         """Create a device profile definition in the repository
 
-        Examples:
+        By default the device profile will be automatically deleted after the test suite is finished
 
+        Examples:
             | ${mo}= | Create Device Profile | {"firmware":{"name":"linux","version":"1.0.0","url":"example.com"}, "software":[{"name":""}],"configuration":[{"type":"example","url":"https://example.com/myfile"}]} |
+            | ${mo}= | Create Device Profile | {"firmware":{"name":"linux","version":"1.0.0","url":"example.com"}, "software":[{"name":""}],"configuration":[{"type":"example","url":"https://example.com/myfile"}]} | auto_delete=${False}
         """
         if isinstance(profile, str):
             profile = json.loads(profile)
 
-        return self._convert_to_json(
-            self.device_mgmt.device_profile.create(name, profile=profile)
-        )
+        mo = self.device_mgmt.device_profile.create(name, profile=profile)
+
+        if auto_delete:
+            self._on_cleanup.append(mo.delete)
+
+        return self._convert_to_json(mo)
 
     @keyword("Install Device Profile")
     def install_device_profile(
