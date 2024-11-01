@@ -339,6 +339,46 @@ class Cumulocity:
         ) as binary_ref:
             self._on_cleanup.append(binary_ref.binary.delete)
             return binary_ref.url
+    
+    #
+    # Managed Objects
+    #
+    @keyword("Create Managed Object")
+    def create_managed_object(
+        self,
+        type: Optional[str] = None,
+        name: Optional[str] = None,
+        owner: Optional[str] = None,
+        auto_delete: bool = True,
+        *fragments: Union[Dict[str, Any], str],
+        # **fragments: Union[Dict[str, Any], str],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        """Create a managed object and automatically delete it after the suite is finished
+
+        Args:
+            name (str, optional): Name
+            type (str, optional): Type
+            owner (str, optional): Owner
+            fragments (Dict[str, Any], optional): Additional fragments to include
+
+        Returns:
+            Dict[str, Any]: The created managed object
+        
+        Examples:
+            | Create Managed Object | name=Linux | type=linux_a | some=
+        """
+        contents = {}
+        for item in fragments:
+            item_value = {}
+            if isinstance(fragments, str):
+                fragments = json.loads(fragments)
+            
+
+        mo = self.device_mgmt.inventory.create_managed_object(type, name, owner, fragments)
+        if auto_delete:
+            self._on_cleanup.append(mo.delete)
+        return self._convert_to_json(mo)
 
     #
     # Configuration
