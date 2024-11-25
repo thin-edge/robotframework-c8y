@@ -1069,7 +1069,7 @@ class Cumulocity:
         except AssertionError as ex:
             fail(f"not enough measurements were found. args={ex.args}")
 
-    @keyword("Delete Managed Object and Device User")
+    @keyword("Delete Managed Object And Device User")
     def delete_managed_object(
         self, external_id: str, external_id_type: str = "c8y_Serial", **kwargs
     ):
