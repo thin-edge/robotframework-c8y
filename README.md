@@ -52,15 +52,9 @@ Robot Framework Library for Cumulocity IoT
 
 ## Library docs
 
-Checkout the [Cumulocity Library docs](./Cumulocity/Cumulocity.rst)
+Checkout the [Keyword documentation](./docs/Cumulocity.html)
 
 You can generate the docs yourself using:
-
-```sh
-libdoc Cumulocity/Cumulocity.py show > Cumulocity/Cumulocity.rst
-```
-
-Or the more interactive html documentation using:
 
 ```sh
 libdoc Cumulocity/Cumulocity.py Cumulocity/Cumulocity.html
