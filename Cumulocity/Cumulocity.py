@@ -1448,6 +1448,38 @@ class Cumulocity:
             **kwargs,
         )
 
+    @keyword("Bulk Register Device With Cumulocity CA")
+    def bulk_register_device_with_cumulocity_ca(
+        self,
+        external_id: str,
+        external_type: Optional[str] = "c8y_Serial",
+        name: Optional[str] = None,
+        device_type: Optional[str] = "thin-edge.io",
+        **kwargs,
+    ) -> DeviceCredentials:
+        """Internal Use Only: Bulk device registration for device using Cumulocity CA
+
+        Arguments:
+            external_id (str): External id
+            external_type (str): External type. Defaults to c8y_Serial
+            name (Optional[str]): Name of the device. Defaults to the external_id
+            type (Optional[str]): Type of the device. Defaults to thin-edge.io
+
+        Examples:
+
+            | ${CREDENTIALS}= | Bulk Register Device With Cumulocity CA | MyCustomDevice0001 |
+            | ${CREDENTIALS}= | Bulk Register Device With Cumulocity CA | MyCustomDevice0001 | name=Custom Name | device_type=linuxA |
+
+        """
+        return self.device_mgmt.registration.bulk_register_with_basic_auth(
+            external_id=external_id,
+            external_type=external_type,
+            name=name,
+            device_type=device_type,
+            auth_type="CREDENTIALS",
+            **kwargs,
+        )
+
     @keyword("Register Device With Basic Auth")
     def register_device_with_basic_auth(
         self,
