@@ -1476,7 +1476,7 @@ class Cumulocity:
             external_type=external_type,
             name=name,
             device_type=device_type,
-            auth_type="CREDENTIALS",
+            auth_type="CERTIFICATES",
             **kwargs,
         )
 
