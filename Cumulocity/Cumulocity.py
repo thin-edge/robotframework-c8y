@@ -18,6 +18,7 @@ from c8y_test_core.device_management import (
     DeviceManagement,
     create_context_from_identity,
 )
+from c8y_test_core.utils import random_name
 from c8y_test_core.assert_events import Event
 from c8y_test_core.models import Software, Configuration, Firmware
 from robot.api.deco import keyword, library
@@ -1590,6 +1591,35 @@ class Cumulocity:
                 profile_id=profile_id, mo=managed_object
             )
         )
+
+    @keyword("Create SmartREST2 Template")
+    def create_smartrest2_template(
+        self, file: str, name: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Create a new SmartREST 2.0 template
+
+        Args:
+            file (str): Path to the SmartREST 2.0 template file (in json format)
+            name (str, optional): Name to be used to refer to the SmartREST 2.0 template.
+                Defaults to a random name.
+
+        Examples:
+            | Create SmartREST2 Template | file=${CURDIR}/mytemplate.json |
+            | Create SmartREST2 Template | file=${CURDIR}/templatecol2.json | name=customOperations |
+        """
+
+        if not name:
+            name = "TST_" + random_name()
+
+        data = {}
+        if file:
+            # Load from json file
+            with open(file, "r", encoding="utf8") as f:
+                data = json.load(f)
+
+        mo = self.device_mgmt.smartrest2.create(name, data)
+        self._on_cleanup.append(mo.delete)
+        return self._convert_to_json(mo)
 
 
 if __name__ == "__main__":
