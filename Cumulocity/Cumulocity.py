@@ -1621,6 +1621,32 @@ class Cumulocity:
         self._on_cleanup.append(mo.delete)
         return self._convert_to_json(mo)
 
+    @keyword("Should Have SmartREST2 Template")
+    def assert_smartrest2_template_exists(self, name: str, **kwargs) -> Dict[str, Any]:
+        """Assert that a SmartREST 2.0 Template is created.
+        Args:
+            name (str): Name to be used to refer to the SmartREST 2.0 template.
+
+        Examples:
+            | Should Have SmartREST2 Template | name=myTemplate1 |
+        """
+
+        return self._convert_to_json(
+            self.device_mgmt.smartrest2.assert_exists(name, kwargs)
+        )
+
+    @keyword("Should Not Have SmartREST2 Template")
+    def assert_smartrest2_template_not_exists(self, name: str, **kwargs) -> None:
+        """Assert that a SmartREST 2.0 Template is not created.
+        Args:
+            name (str): Name to be used to refer to the SmartREST 2.0 template.
+
+        Examples:
+            | Should Not Have SmartREST2 Template | name=myTemplate1 |
+        """
+
+        self.device_mgmt.smartrest2.assert_not_exists(name, kwargs)
+
 
 if __name__ == "__main__":
     pass
