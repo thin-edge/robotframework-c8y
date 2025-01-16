@@ -1632,7 +1632,7 @@ class Cumulocity:
         """
 
         return self._convert_to_json(
-            self.device_mgmt.smartrest2.assert_exists(name, kwargs)
+            self.device_mgmt.smartrest2.assert_exists(name, **kwargs)
         )
 
     @keyword("Should Not Have SmartREST2 Template")
@@ -1645,7 +1645,7 @@ class Cumulocity:
             | Should Not Have SmartREST2 Template | name=myTemplate1 |
         """
 
-        self.device_mgmt.smartrest2.assert_not_exists(name, kwargs)
+        self.device_mgmt.smartrest2.assert_not_exists(name, **kwargs)
 
 
 if __name__ == "__main__":
