@@ -12,7 +12,10 @@ from dotmap import DotMap
 from dotenv import load_dotenv
 from c8y_test_core.assert_operation import AssertOperation
 from c8y_test_core.c8y import CustomCumulocityApp
-from c8y_test_core.assert_device_registration import DeviceCredentials
+from c8y_test_core.assert_device_registration import (
+    DeviceCredentials,
+    DeviceSimpleEnrollCredentials,
+)
 from c8y_test_core.assert_software_management import SoftwareManagement
 from c8y_test_core.device_management import (
     DeviceManagement,
@@ -1457,8 +1460,12 @@ class Cumulocity:
         name: Optional[str] = None,
         device_type: Optional[str] = "thin-edge.io",
         **kwargs,
-    ) -> DeviceCredentials:
-        """Internal Use Only: Bulk device registration for device using Cumulocity CA
+    ) -> DeviceSimpleEnrollCredentials:
+        """Bulk device registration for device using Cumulocity CA
+
+        It returns an object with the following properties:
+            .external_id    - External id of the registered device
+            .one_time_password - One-time password which can be used to request a certificate
 
         Arguments:
             external_id (str): External id
@@ -1472,12 +1479,11 @@ class Cumulocity:
             | ${CREDENTIALS}= | Bulk Register Device With Cumulocity CA | MyCustomDevice0001 | name=Custom Name | device_type=linuxA |
 
         """
-        return self.device_mgmt.registration.bulk_register_with_basic_auth(
+        return self.device_mgmt.registration.bulk_register_with_ca(
             external_id=external_id,
             external_type=external_type,
             name=name,
             device_type=device_type,
-            auth_type="CERTIFICATES",
             **kwargs,
         )
 
