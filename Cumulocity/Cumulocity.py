@@ -142,6 +142,21 @@ class Cumulocity:
         self._on_cleanup.clear()
 
     #
+    #
+    #
+    @keyword("Get Domain")
+    def get_domain(self, **kwargs) -> str:
+        """Get Cumulocity domain
+
+        Returns:
+            str: domain
+        """
+        if "://" in self.c8y.base_url:
+            return self.c8y.base_url.split("://")[1]
+
+        return self.c8y.base_url
+
+    #
     # Alarms
     #
     @keyword("Device Should Have Alarm/s")
