@@ -1089,7 +1089,7 @@ class Cumulocity:
             fail(f"not enough measurements were found. args={ex.args}")
 
     @keyword("Delete Managed Object And Device User")
-    def delete_managed_object(
+    def delete_managed_object_and_device_user(
         self, external_id: str, external_id_type: str = "c8y_Serial", **kwargs
     ):
         """Delete managed object and related device user
@@ -1098,10 +1098,18 @@ class Cumulocity:
             external_id (str): External identity
             external_id_type (str, optional): External identity type. Defaults to "c8y_Serial".
         """
-        managed_object = self.device_mgmt.identity.assert_exists(
-            external_id, external_type=external_id_type, **kwargs
+        self.device_mgmt.inventory.delete_device_and_user(
+            external_id, external_id_type, **kwargs
         )
-        self.device_mgmt.inventory.delete_device_and_user(managed_object)
+
+    @keyword("Delete Managed Object")
+    def delete_managed_object(self, mo_id: str, **kwargs):
+        """Delete managed object
+
+        Args:
+            mo_id (str): Managed object id
+        """
+        self.device_mgmt.c8y.inventory.delete(mo_id)
 
     @keyword("Device Should Have Fragments")
     def assert_contains_fragments(self, *fragments: str, **kwargs) -> Dict[str, Any]:
