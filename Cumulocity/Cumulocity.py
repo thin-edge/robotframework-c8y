@@ -3,7 +3,7 @@
 """
 
 import logging
-from typing import List, Union, Dict, Any, Optional
+from typing import List, Union, Dict, Any, Optional, Tuple
 import json
 import re
 from datetime import datetime
@@ -93,13 +93,13 @@ class Cumulocity:
     DEFAULT_REQUEST_TIMEOUT = 30.0
 
     # Class-internal parameters
-    device_mgmt: DeviceManagement = None
-    c8y: CustomCumulocityApp = None
+    device_mgmt: DeviceManagement
+    c8y: CustomCumulocityApp
 
     # Constructor
     def __init__(
         self,
-        timeout: str = DEFAULT_TIMEOUT,
+        timeout: int = DEFAULT_TIMEOUT,
         request_timeout=DEFAULT_REQUEST_TIMEOUT,
     ):
         self.devices = {}
@@ -158,8 +158,12 @@ class Cumulocity:
     #
     @keyword("Device Should Have Alarm/s")
     def alarm_assert_count(
-        self, minimum: int = 1, maximum: int = None, expected_text: str = None, **kwargs
-    ) -> List[str]:
+        self,
+        minimum: int = 1,
+        maximum: Optional[int] = None,
+        expected_text: Optional[str] = None,
+        **kwargs,
+    ) -> List[Dict[str, Any]]:
         """Assert number of alarms
 
         Examples:
@@ -177,7 +181,7 @@ class Cumulocity:
         Returns:
             List[str]: List of measurements as json
         """
-        return self._convert_to_json(
+        return self._sequence_to_json(
             self.device_mgmt.alarms.assert_count(
                 min_matches=minimum,
                 max_matches=maximum,
@@ -213,9 +217,7 @@ class Cumulocity:
         Returns:
             str: Alarm json
         """
-        return self._convert_to_json(
-            self.device_mgmt.alarms.assert_exists(alarm_id, **kwargs)
-        )
+        return self._to_json(self.device_mgmt.alarms.assert_exists(alarm_id, **kwargs))
 
     #
     # Events
@@ -223,12 +225,12 @@ class Cumulocity:
     @keyword("Device Should Have Event/s")
     def event_assert_count(
         self,
-        expected_text: str = None,
-        with_attachment: bool = None,
+        expected_text: Optional[str] = None,
+        with_attachment: Optional[bool] = None,
         minimum: int = 1,
-        maximum: int = None,
+        maximum: Optional[int] = None,
         **kwargs,
-    ) -> List[str]:
+    ) -> List[Dict[str, Any]]:
         """Assert event count
 
         Args:
@@ -240,7 +242,7 @@ class Cumulocity:
         Returns:
             List[str]: List of events as json
         """
-        return self._convert_to_json(
+        return self._sequence_to_json(
             self.device_mgmt.events.assert_count(
                 min_matches=minimum,
                 max_matches=maximum,
@@ -254,11 +256,11 @@ class Cumulocity:
     def event_assert_attachment(
         self,
         event_id: str,
-        expected_contents: str = None,
-        expected_pattern: str = None,
-        expected_size_min: int = None,
-        expected_md5: str = None,
-        encoding: str = None,
+        expected_contents: Optional[str] = None,
+        expected_pattern: Optional[str] = None,
+        expected_size_min: Optional[int] = None,
+        expected_md5: Optional[str] = None,
+        encoding: str = "utf-8",
         **kwargs,
     ) -> bytes:
         """Assert event attachment
@@ -324,7 +326,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Event used in the assertion
         """
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.events.assert_attachment_info(
                 event=event,
                 expected_name_pattern=name,
@@ -341,8 +343,8 @@ class Cumulocity:
         self,
         name: str,
         binary_type: str,
-        file: str = None,
-        contents: str = None,
+        file: Optional[str] = None,
+        contents: Optional[str] = None,
         **kwargs,
     ) -> str:
         """Create an inventory binary from either a file or a string
@@ -364,7 +366,7 @@ class Cumulocity:
         self, *types: str, includes: bool = False, **kwargs
     ) -> List[str]:
         supported_types = self.device_mgmt.configuration.assert_supported_types(
-            types, includes=includes, **kwargs
+            list(types), includes=includes, **kwargs
         )
         return supported_types
 
@@ -390,7 +392,7 @@ class Cumulocity:
     @keyword("Should Support Log File Types")
     def should_support_logfile_types(
         self, *types: str, includes: bool = False, **kwargs
-    ) -> List[str]:
+    ) -> Dict[str, Any]:
         """Assert presence of some supported log file types by checking the c8y_SupportedLogs
         fragment of the inventory managed object.
 
@@ -410,19 +412,19 @@ class Cumulocity:
         Returns:
             ManagedObject: Managed object
         """
-        supported_types = self.device_mgmt.logs.assert_supported_types(
+        mo = self.device_mgmt.logs.assert_supported_types(
             *types,
             includes=includes,
             **kwargs,
         )
-        return supported_types
+        return mo.to_full_json()
 
     @keyword("Get Log File")
     def get_logfile(
         self,
         type: str,
-        date_from: datetime = None,
-        date_to: datetime = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None,
         maximum_lines: int = 100,
         search_text: str = "",
         **kwargs,
@@ -459,7 +461,9 @@ class Cumulocity:
     # Software
     #
     def _software_format_list(
-        self, *items: str, default_action: str = SoftwareManagement.Action.INSTALL
+        self,
+        *items: Union[str, Dict[str, Any]],
+        default_action: str = SoftwareManagement.Action.INSTALL,
     ) -> List[Software]:
         """Convert a list of strings to a list of Software items.
         Each item in the list should be a csv string in the format
@@ -491,7 +495,6 @@ class Cumulocity:
     def software_assert_installed(
         self,
         *expected_software_list: Union[str, Dict[str, Any]],
-        mo: str = None,
         **kwargs,
     ) -> Dict[str, Dict[str, Any]]:
         """Assert that software packages are installed (in the c8y_SoftwareList fragment)
@@ -503,27 +506,21 @@ class Cumulocity:
             | Should Contain | ${software} | package-001 |
             | Should Be Equal | ${software["package-002"]["version"]} | 1.0.0 |
 
-        Args:
-            mo (str, optional): Device Managed object. Defaults to None.
-                If set to None, then the current device managed object context
-                will be used.
-
         Returns:
             Dict[str, Dict[str, Any]]: Managed object json
         """
         items = self._software_format_list(*expected_software_list)
 
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.software_management.assert_software_installed(
                 *items,
-                mo=mo,
                 **kwargs,
             )
         )
 
     @keyword("Device Should Not Have Installed Software")
     def software_assert_not_installed(
-        self, *expected_software_list: str, mo: str = None, **kwargs
+        self, *expected_software_list: str, **kwargs
     ) -> Dict[str, Dict[str, Any]]:
         """Assert that software packages are not installed (in the c8y_SoftwareList fragment)
 
@@ -532,20 +529,14 @@ class Cumulocity:
             | ${software}= | Device Should Not Have Installed Software | package-001 | package-002,1.0.0 |
             | Should Not Contain | ${software} | package-001 |
 
-        Args:
-            mo (str, optional): Device Managed object. Defaults to None.
-                If set to None, then the current device managed object context
-                will be used.
-
         Returns:
             Dict[str, Dict[str, Any]]: Managed object json
         """
         items = self._software_format_list(*expected_software_list)
 
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.software_management.assert_not_software_installed(
                 *items,
-                mo=mo,
                 **kwargs,
             )
         )
@@ -648,7 +639,7 @@ class Cumulocity:
             Dict[str, Any]: Managed object
         """
         item = Firmware(name, version, url)
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.firmware_management.assert_firmware(item, **kwargs)
         )
 
@@ -667,7 +658,7 @@ class Cumulocity:
             Dict[str, Any]: Managed object
         """
         item = Firmware(name, version, url)
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.firmware_management.assert_not_firmware(item, **kwargs)
         )
 
@@ -708,7 +699,7 @@ class Cumulocity:
         | ${ops}= | Should Have Operations | min_count=0 | min_count=0 | status=PENDING | fragment=c8y_RemoteAccessConnect |
         | ${ops}= | Should Have Operations | min_count=0 | min_count=0 | status=EXECUTING | fragment=c8y_RemoteAccessConnect |
         """
-        return self._convert_to_json(
+        return self._sequence_to_json(
             self.device_mgmt.operations.assert_count(
                 min_count=min_count,
                 max_count=max_count,
@@ -733,7 +724,7 @@ class Cumulocity:
 
         | ${ops}= | Should Have Only Completed Operations |
         """
-        return self._convert_to_json(
+        return self._sequence_to_json(
             self.device_mgmt.operations.assert_all_completed(
                 device_id=device_id,
                 **kwargs,
@@ -752,7 +743,7 @@ class Cumulocity:
         Examples:
             | ${mo}= | Should Contain Supported Operations | c8y_Restart | c8y_SoftwareUpdate |
         """
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.inventory.assert_contains_supported_operations(
                 *types, **kwargs
             )
@@ -770,7 +761,7 @@ class Cumulocity:
         Examples:
             | ${mo}= | Should Have Exact Supported Operations | c8y_Restart |
         """
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.inventory.assert_supported_operations(*types, **kwargs)
         )
 
@@ -801,13 +792,13 @@ class Cumulocity:
         Returns:
             AssertOperation: Operation
         """
-        if fragments is None:
-            fragments = {}
-
+        fragments_dict = {}
         if isinstance(fragments, str):
-            fragments = json.loads(fragments)
+            fragments_dict = json.loads(fragments)
+        elif isinstance(fragments, dict):
+            fragments_dict = fragments
 
-        op_fragments = {"description": description, **fragments, **kwargs}
+        op_fragments = {"description": description, **fragments_dict, **kwargs}
         operation = self.device_mgmt.create_operation(
             **op_fragments,
         )
@@ -825,7 +816,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
-        return self._convert_to_json(operation.assert_success(**kwargs))
+        return self._to_json(operation.assert_success(**kwargs))
 
     @keyword("Operation Should Be PENDING")
     def operation_assert_pending(
@@ -839,7 +830,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
-        return self._convert_to_json(operation.assert_pending(**kwargs))
+        return self._to_json(operation.assert_pending(**kwargs))
 
     @keyword("Operation Should Not Be PENDING")
     def operation_assert_not_pending(
@@ -853,7 +844,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
-        return self._convert_to_json(operation.assert_not_pending(**kwargs))
+        return self._to_json(operation.assert_not_pending(**kwargs))
 
     @keyword("Operation Should Be DONE")
     def operation_assert_done(
@@ -868,7 +859,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
-        return self._convert_to_json(operation.assert_done(**kwargs))
+        return self._to_json(operation.assert_done(**kwargs))
 
     @keyword("Operation Should Not Be DONE")
     def operation_assert_not_done(
@@ -883,7 +874,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
-        return self._convert_to_json(operation.assert_not_done(**kwargs))
+        return self._to_json(operation.assert_not_done(**kwargs))
 
     @keyword("Operation Should Be EXECUTING")
     def operation_assert_executing(
@@ -897,7 +888,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
-        return self._convert_to_json(operation.assert_executing(**kwargs))
+        return self._to_json(operation.assert_executing(**kwargs))
 
     @keyword("Operation Should Be DELIVERED")
     def operation_assert_delivered(
@@ -912,7 +903,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
-        return self._convert_to_json(operation.assert_delivered(**kwargs))
+        return self._to_json(operation.assert_delivered(**kwargs))
 
     @keyword("Operation Should Be FAILED")
     def operation_assert(
@@ -929,7 +920,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
-        return self._convert_to_json(
+        return self._to_json(
             operation.assert_failed(failure_reason=failure_reason, **kwargs)
         )
 
@@ -948,9 +939,9 @@ class Cumulocity:
             **kwargs,
         )
 
-    def _convert_item(self, item: any) -> Dict[str, Any]:
+    def _to_json(self, item: Any) -> Dict[str, Any]:
         if not item:
-            return ""
+            return {}
 
         data = item
         if item and hasattr(item, "to_json"):
@@ -960,13 +951,11 @@ class Cumulocity:
 
         return data
 
-    def _convert_to_json(
-        self, item: any
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
-        if isinstance(item, list):
-            return [self._convert_item(subitem) for subitem in item]
+    def _sequence_to_json(self, item: Union[List, Tuple]) -> List[Dict[str, Any]]:
+        if isinstance(item, (list, tuple)):
+            return [self._to_json(subitem) for subitem in item]
 
-        return self._convert_item(item)
+        return self._to_json(item)
 
     #
     # Library settings
@@ -987,7 +976,7 @@ class Cumulocity:
     # Devices / Child devices
     #
     def _set_managed_object_context(
-        self, external_id: str = None, external_type: str = "c8y_Serial", **kwargs
+        self, external_id: str, external_type: str = "c8y_Serial", **kwargs
     ):
         """Set the managed object context which will be used for subsequent keywords
 
@@ -1001,14 +990,15 @@ class Cumulocity:
         managed_object = self.device_mgmt.identity.assert_exists(
             external_id, external_type, **kwargs
         )
+        assert managed_object.id
         self.device_mgmt.set_device_id(managed_object.id)
-        return self._convert_to_json(
+        return self._to_json(
             managed_object,
         )
 
     @keyword("Set Device")
     def set_device(
-        self, external_id: str = None, external_type: str = "c8y_Serial", **kwargs
+        self, external_id: str, external_type: str = "c8y_Serial", **kwargs
     ) -> Dict[str, Any]:
         """
         Deprecated: This function will be removed in the future. Please use "Set Managed Object" instead.
@@ -1016,7 +1006,7 @@ class Cumulocity:
         Set the device context which will be used for subsequent keywords
 
         Args:
-            external_id (str, optional): External identity. Defaults to None.
+            external_id (str): External identity
             external_type (str, optional): External identity type. Defaults to "c8y_Serial".
 
         Returns:
@@ -1028,12 +1018,12 @@ class Cumulocity:
 
     @keyword("Set Managed Object")
     def set_managed_object(
-        self, external_id: str = None, external_type: str = "c8y_Serial", **kwargs
+        self, external_id: str, external_type: str = "c8y_Serial", **kwargs
     ) -> Dict[str, Any]:
         """Set the managed object context which will be used for subsequent keywords
 
         Args:
-            external_id (str, optional): External identity. Defaults to None.
+            external_id (str): External identity
             external_type (str, optional): External identity type. Defaults to "c8y_Serial".
 
         Returns:
@@ -1050,7 +1040,7 @@ class Cumulocity:
         Returns:
             List[Dict[str, Any]]: List of child devices
         """
-        return self._convert_to_json(
+        return self._sequence_to_json(
             self.device_mgmt.inventory.assert_child_device_names(*name, **kwargs)
         )
 
@@ -1061,7 +1051,7 @@ class Cumulocity:
 
     @keyword("Device Should Have Measurements")
     def assert_measurement_count(
-        self, minimum: int = 1, maximum: int = None, **kwargs
+        self, minimum: int = 1, maximum: Optional[int] = None, **kwargs
     ) -> List[Dict[str, Any]]:
         """Assert measurement count
 
@@ -1077,13 +1067,15 @@ class Cumulocity:
             | ${measure}= | Device Should Have Measurements | 1 | ${measure} = [{'type': 'c8y_TemperatureMeasurement', 'time': '2023-02-02T13:30:16.343Z', 'c8y_TemperatureMeasurement': {'T': {'unit': 'C', 'value': 20}}, 'source': {'id': '55207'}}] |
         """
         try:
-            return self._convert_to_json(
+            return self._sequence_to_json(
                 self.device_mgmt.measurements.assert_count(
                     min_count=minimum, max_count=maximum, **kwargs
                 )
             )
         except AssertionError as ex:
             fail(f"not enough measurements were found. args={ex.args}")
+
+        return []
 
     @keyword("Delete Managed Object And Device User")
     def delete_managed_object_and_device_user(
@@ -1117,8 +1109,10 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Managed object
         """
-        return self._convert_to_json(
-            self.device_mgmt.inventory.assert_contains_fragments(fragments, **kwargs)
+        return self._to_json(
+            self.device_mgmt.inventory.assert_contains_fragments(
+                list(fragments), **kwargs
+            )
         )
 
     @keyword("Managed Object Should Have Fragments")
@@ -1130,8 +1124,10 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Managed object
         """
-        return self._convert_to_json(
-            self.device_mgmt.inventory.assert_contains_fragments(fragments, **kwargs)
+        return self._to_json(
+            self.device_mgmt.inventory.assert_contains_fragments(
+                list(fragments), **kwargs
+            )
         )
 
     @keyword("Managed Object Should Not Have Fragments")
@@ -1143,8 +1139,10 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Managed object
         """
-        return self._convert_to_json(
-            self.device_mgmt.inventory.assert_missing_fragments(fragments, **kwargs)
+        return self._to_json(
+            self.device_mgmt.inventory.assert_missing_fragments(
+                list(fragments), **kwargs
+            )
         )
 
     @keyword("Managed Object Should Have Fragment Values")
@@ -1168,7 +1166,7 @@ class Cumulocity:
         """
 
         value_dict = self._create_dict(properties)
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.inventory.assert_contains_fragment_values(
                 value_dict, **kwargs
             )
@@ -1197,14 +1195,15 @@ class Cumulocity:
         """
 
         value_dict = self._create_dict(properties)
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.inventory.assert_contains_fragment_values(
                 value_dict, **kwargs
             )
         )
 
-    def _create_dict(self, properties: List[Union[str, dict]]) -> dict:
+    def _create_dict(self, properties: Tuple[Union[str, Dict[str, Any]], ...]) -> dict:
         values = DotMap()
+        value_dict = {}
         for item in properties:
             if isinstance(item, str):
                 if item.startswith("{") and item.endswith("}"):
@@ -1251,7 +1250,7 @@ class Cumulocity:
                 value_dict = DotMap(
                     {
                         **value_dict,
-                        **obj,
+                        **item,
                     }
                 )
             else:
@@ -1264,14 +1263,14 @@ class Cumulocity:
     @keyword("Should Be A Child Device Of Device")
     def assert_child_device_relationship(
         self, external_id: str, external_id_type: str = "c8y_Serial", **kwargs
-    ) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
         """Assert that a child device (referenced via external identity)
         should be a child device of the current device context.
 
         Returns:
-            Dict[str, Any]: Managed object
+            List[Dict[str, Any]]: Managed object
         """
-        return self._convert_to_json(
+        return self._sequence_to_json(
             self.device_mgmt.inventory.assert_relationship(
                 external_id, external_id_type, child_type="childDevices", **kwargs
             )
@@ -1299,6 +1298,7 @@ class Cumulocity:
         managed_object = self.device_mgmt.identity.assert_exists(
             external_id, external_type, **kwargs
         )
+        assert managed_object.id, "Managed object id is not set"
         self.device_mgmt.set_device_id(managed_object.id)
 
         if show_info:
@@ -1316,7 +1316,7 @@ class Cumulocity:
             logger.info("EXTERNAL URL     : %s", mgmt_url)
             logger.info("-" * 60)
 
-        return self._convert_to_json(managed_object)
+        return self._to_json(managed_object)
 
     @keyword("Device Should Exist")
     def device_should_exist(
@@ -1363,7 +1363,7 @@ class Cumulocity:
         )
 
     @keyword("Log Device Info")
-    def show_device_information(self, device_id: str = None, **kwargs):
+    def show_device_information(self, device_id: Optional[str] = None, **kwargs):
         """Show device information, e.g. id, external id and a link to the
         device in Cumulocity IoT.
 
@@ -1382,6 +1382,7 @@ class Cumulocity:
             return
 
         managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
+        assert managed_object.id, "Managed object id is not set"
 
         external_id = str(managed_object.owner)
         if external_id.startswith("device_"):
@@ -1406,12 +1407,12 @@ class Cumulocity:
     @keyword("Should Have Services")
     def assert_services(
         self,
-        device_id: str = None,
+        device_id: Optional[str] = None,
         min_count: int = 1,
-        max_count: int = None,
-        service_type: str = None,
-        status: str = None,
-        name: str = None,
+        max_count: Optional[int] = None,
+        service_type: Optional[str] = None,
+        status: Optional[str] = None,
+        name: Optional[str] = None,
         **kwargs,
     ):
         """Device should have a specific count of service matching the given criteria
@@ -1425,7 +1426,7 @@ class Cumulocity:
             name (str, optional): Filter by service name
             status (str, optional): Filter by service status
         """
-        return self._convert_to_json(
+        return self._sequence_to_json(
             self.device_mgmt.inventory.assert_services(
                 inventory_id=device_id,
                 min_count=min_count,
@@ -1550,15 +1551,18 @@ class Cumulocity:
             | ${mo}= | Create Device Profile | {"firmware":{"name":"linux","version":"1.0.0","url":"example.com"}, "software":[{"name":""}],"configuration":[{"type":"example","url":"https://example.com/myfile"}]} |
             | ${mo}= | Create Device Profile | {"firmware":{"name":"linux","version":"1.0.0","url":"example.com"}, "software":[{"name":""}],"configuration":[{"type":"example","url":"https://example.com/myfile"}]} | auto_delete=${False}
         """
+        profile_contents = {}
         if isinstance(profile, str):
-            profile = json.loads(profile)
+            profile_contents = json.loads(profile)
+        elif isinstance(profile, dict):
+            profile_contents = profile
 
-        mo = self.device_mgmt.device_profile.create(name, profile=profile)
+        mo = self.device_mgmt.device_profile.create(name, profile=profile_contents)
 
         if auto_delete:
             self._on_cleanup.append(mo.delete)
 
-        return self._convert_to_json(mo)
+        return self._to_json(mo)
 
     @keyword("Install Device Profile")
     def install_device_profile(
@@ -1591,7 +1595,7 @@ class Cumulocity:
         if device_id is None:
             device_id = self.device_mgmt.context.device_id
         managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.device_profile.assert_installed(
                 profile_id=profile_id, mo=managed_object
             )
@@ -1612,7 +1616,7 @@ class Cumulocity:
         if device_id is None:
             device_id = self.device_mgmt.context.device_id
         managed_object = self.device_mgmt.inventory.assert_exists(device_id, **kwargs)
-        return self._convert_to_json(
+        return self._to_json(
             self.device_mgmt.device_profile.assert_not_installed(
                 profile_id=profile_id, mo=managed_object
             )
@@ -1645,7 +1649,7 @@ class Cumulocity:
 
         mo = self.device_mgmt.smartrest2.create(name, data)
         self._on_cleanup.append(mo.delete)
-        return self._convert_to_json(mo)
+        return self._to_json(mo)
 
     @keyword("Should Have SmartREST2 Template")
     def assert_smartrest2_template_exists(self, name: str, **kwargs) -> Dict[str, Any]:
@@ -1657,9 +1661,7 @@ class Cumulocity:
             | Should Have SmartREST2 Template | name=myTemplate1 |
         """
 
-        return self._convert_to_json(
-            self.device_mgmt.smartrest2.assert_exists(name, **kwargs)
-        )
+        return self._to_json(self.device_mgmt.smartrest2.assert_exists(name, **kwargs))
 
     @keyword("Should Not Have SmartREST2 Template")
     def assert_smartrest2_template_not_exists(self, name: str, **kwargs) -> None:
