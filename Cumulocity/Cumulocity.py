@@ -151,10 +151,7 @@ class Cumulocity:
         Returns:
             str: domain
         """
-        if "://" in self.c8y.base_url:
-            return self.c8y.base_url.split("://")[1]
-
-        return self.c8y.base_url
+        return self.device_mgmt.context.domain()
 
     #
     # Alarms
