@@ -932,6 +932,7 @@ class Cumulocity:
         self,
         name: str,
         pem_cert: str,
+        auto_registration_enabled: bool = True,
         ignore_duplicate: bool = True,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
@@ -940,6 +941,7 @@ class Cumulocity:
         Examples:
 
         | ${ops}= | Upload Certificate | name=My Root CA  | pem_cert=-----BEGIN CERTIFICATE-----... |
+        | ${ops}= | Upload Certificate | name=My Root CA  | pem_cert=-----BEGIN CERTIFICATE-----... | auto_registration_enabled=${False} |
         | ${ops}= | Upload Certificate | name=My Root CA  | pem_cert=-----BEGIN CERTIFICATE-----... | ignore_duplicate=${False} |
 
         Returns:
@@ -949,6 +951,7 @@ class Cumulocity:
         self.device_mgmt.trusted_certificates.upload_certificate(
             name,
             pem_cert=pem_cert,
+            auto_registration_enabled=auto_registration_enabled,
             ignore_duplicate=ignore_duplicate,
             **kwargs,
         )
