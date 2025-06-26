@@ -927,6 +927,32 @@ class Cumulocity:
     #
     # Trusted Certificates
     #
+    @keyword("Upload Certificate")
+    def upload_trusted_certificate(
+        self,
+        name: str,
+        pem_cert: str,
+        ignore_duplicate: bool = True,
+        **kwargs,
+    ) -> Optional[Dict[str, Any]]:
+        """Upload a certificate to Cumulocity as a trusted certificate
+
+        Examples:
+
+        | ${ops}= | Upload Certificate | name=My Root CA  | pem_cert=-----BEGIN CERTIFICATE-----... |
+        | ${ops}= | Upload Certificate | name=My Root CA  | pem_cert=-----BEGIN CERTIFICATE-----... | ignore_duplicate=${False} |
+
+        Returns:
+            Optional[Dict[str, Any]]: Response if the certificate is uploaded
+                without any errors
+        """
+        self.device_mgmt.trusted_certificates.upload_certificate(
+            name,
+            pem_cert=pem_cert,
+            ignore_duplicate=ignore_duplicate,
+            **kwargs,
+        )
+
     @keyword("Delete Device Certificate From Platform")
     def trusted_certificate_delete(self, fingerprint: str, **kwargs):
         """Delete the trusted certificate from the platform
