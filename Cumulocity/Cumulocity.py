@@ -683,7 +683,7 @@ class Cumulocity:
     @keyword("Should Have Operations")
     def operation_assert_count(
         self,
-        min_count: Optional[int] = 1,
+        min_count: int = 1,
         max_count: Optional[int] = None,
         *,
         fragment: Optional[str] = None,
@@ -1474,9 +1474,9 @@ class Cumulocity:
     def bulk_register_device_with_basic_auth(
         self,
         external_id: str,
-        external_type: Optional[str] = "c8y_Serial",
+        external_type: str = "c8y_Serial",
         name: Optional[str] = None,
-        device_type: Optional[str] = "thin-edge.io",
+        device_type: str = "thin-edge.io",
         **kwargs,
     ) -> DeviceCredentials:
         """Bulk device registration for device that require
@@ -1506,9 +1506,9 @@ class Cumulocity:
     def bulk_register_device_with_cumulocity_ca(
         self,
         external_id: str,
-        external_type: Optional[str] = "c8y_Serial",
+        external_type: str = "c8y_Serial",
         name: Optional[str] = None,
-        device_type: Optional[str] = "thin-edge.io",
+        device_type: str = "thin-edge.io",
         **kwargs,
     ) -> DeviceSimpleEnrollCredentials:
         """Bulk device registration for device using Cumulocity CA
