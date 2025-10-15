@@ -42,6 +42,25 @@ except Exception:
 __author__ = "Reuben Miller"
 
 
+def deprecated(name: str, alternatives: List[str]):
+    """Print a deprecation warning
+
+    Args:
+        name (str): Keyword that is deprecated
+        *alternatives (List[str]): List of alternatives to use instead
+    """
+    if alternatives:
+        logger.warning(
+            "Deprecation warning: '%s' is deprecated please use one of the following keywords instead: %s",
+            name,
+            alternatives,
+        )
+    else:
+        logger.warning(
+            "Deprecation warning: '%s' is deprecated and has no replacement", name
+        )
+
+
 def is_dot_notation(key: str) -> bool:
     return re.match(r"^[\w.\-: ]+$", key, re.IGNORECASE) is not None
 
@@ -389,11 +408,66 @@ class Cumulocity:
     #
     # Log File
     #
+    @keyword("Should Have Exact Supported Log Types")
+    def should_match_supported_log_types(self, *types: str, **kwargs) -> Dict[str, Any]:
+        """Check that the device's supported log types (c8y_SupportedLogs) matches
+        all of the given types (the order does not matter).
+
+        If the device has any additional log types that are not included in the assertion
+        then the assertion will fail.
+
+        Examples:
+
+        | ${mo}= | Should Have Exact Supported Log Types | mosquitto | tedge-agent::journald |
+
+        Args:
+            *types (str): List of expected supported log types (exact match)
+
+        Returns:
+            ManagedObject: Managed object
+        """
+        mo = self.device_mgmt.logs.assert_supported_types(
+            *types,
+            includes=False,
+            **kwargs,
+        )
+        return mo.to_full_json()
+
+    @keyword("Should Contain Supported Log Types")
+    def should_contain_supported_log_types(
+        self, *types: str, **kwargs
+    ) -> Dict[str, Any]:
+        """Check that the device's supported log types (c8y_SupportedLogs) contains
+        the given types (the order does not matter).
+
+        The assertion checks if the given supported log types are present on the device,
+        so it is allowed to have additional log types that are not included in the assertion.
+
+        Examples:
+
+        | ${mo}= | Should Contain Supported Log Types | mosquitto |
+
+        Args:
+            *types (str): List of supported log types that should be present
+
+        Returns:
+            ManagedObject: Managed object
+        """
+        mo = self.device_mgmt.logs.assert_supported_types(
+            *types,
+            includes=True,
+            **kwargs,
+        )
+        return mo.to_full_json()
+
     @keyword("Should Support Log File Types")
     def should_support_logfile_types(
         self, *types: str, includes: bool = False, **kwargs
     ) -> Dict[str, Any]:
-        """Assert presence of some supported log file types by checking the c8y_SupportedLogs
+        """Deprecated: This function will be removed in the future. Please use "Should Contain Supported Log Types"
+        or "Should Have Exact Supported Log Types" instead.
+
+        Assert presence of some supported log file types by checking the c8y_SupportedLogs
         fragment of the inventory managed object.
 
         It will only check if the given supported log file types exist, other supported log file
@@ -412,6 +486,13 @@ class Cumulocity:
         Returns:
             ManagedObject: Managed object
         """
+        deprecated(
+            "Should Support Log File Types",
+            alternatives=[
+                "Should Contain Supported Log Types",
+                "Should Have Exact Supported Log Types",
+            ],
+        )
         mo = self.device_mgmt.logs.assert_supported_types(
             *types,
             includes=includes,
