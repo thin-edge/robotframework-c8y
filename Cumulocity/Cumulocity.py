@@ -384,8 +384,15 @@ class Cumulocity:
     def configuration_assert_supported_types(
         self, *types: str, includes: bool = False, **kwargs
     ) -> List[str]:
+        deprecated(
+            "Should Support Configurations",
+            alternatives=[
+                "Should Have Exact Supported Configuration Types",
+                "Should Contain Supported Configuration Types",
+            ],
+        )
         supported_types = self.device_mgmt.configuration.assert_supported_types(
-            list(types), includes=includes, **kwargs
+            *types, includes=includes, **kwargs
         )
         return supported_types
 
@@ -405,11 +412,65 @@ class Cumulocity:
         )
         return operation
 
+    @keyword("Should Have Exact Supported Configuration Types")
+    def should_match_supported_configuration_types(
+        self, *types: str, **kwargs
+    ) -> List[str]:
+        """Check that the device's supported configuration types (c8y_SupportedConfigurations) matches
+        all of the given types (the order does not matter).
+
+        If the device has any additional configuration types that are not included in the assertion
+        then the assertion will fail.
+
+        Examples:
+
+        | ${mo}= | Should Have Exact Supported Configuration Types | mosquitto | tedge-agent::journald |
+
+        Args:
+            *types (str): List of expected supported configuration types (exact match)
+
+        Returns:
+            List[str]: Supported configuration types
+        """
+        supported_types = self.device_mgmt.configuration.assert_supported_types(
+            *types,
+            includes=False,
+            **kwargs,
+        )
+        return supported_types
+
+    @keyword("Should Contain Supported Configuration Types")
+    def should_contain_supported_configuration_types(
+        self, *types: str, **kwargs
+    ) -> List[str]:
+        """Check that the device's supported configuration types (c8y_SupportedConfigurations) contains
+        the given types (the order does not matter).
+
+        The assertion checks if the given supported log types are present on the device,
+        so it is allowed to have additional log types that are not included in the assertion.
+
+        Examples:
+
+        | ${mo}= | Should Contain Supported Log Types | mosquitto |
+
+        Args:
+            *types (str): List of supported log types that should be present
+
+        Returns:
+            List[str]: Supported configuration types
+        """
+        supported_types = self.device_mgmt.configuration.assert_supported_types(
+            *types,
+            includes=True,
+            **kwargs,
+        )
+        return supported_types
+
     #
     # Log File
     #
     @keyword("Should Have Exact Supported Log Types")
-    def should_match_supported_log_types(self, *types: str, **kwargs) -> Dict[str, Any]:
+    def should_match_supported_log_types(self, *types: str, **kwargs) -> List[str]:
         """Check that the device's supported log types (c8y_SupportedLogs) matches
         all of the given types (the order does not matter).
 
@@ -424,19 +485,17 @@ class Cumulocity:
             *types (str): List of expected supported log types (exact match)
 
         Returns:
-            ManagedObject: Managed object
+            List[str]: Supported log types
         """
-        mo = self.device_mgmt.logs.assert_supported_types(
+        supported_types = self.device_mgmt.logs.assert_supported_types(
             *types,
             includes=False,
             **kwargs,
         )
-        return mo.to_full_json()
+        return supported_types
 
     @keyword("Should Contain Supported Log Types")
-    def should_contain_supported_log_types(
-        self, *types: str, **kwargs
-    ) -> Dict[str, Any]:
+    def should_contain_supported_log_types(self, *types: str, **kwargs) -> List[str]:
         """Check that the device's supported log types (c8y_SupportedLogs) contains
         the given types (the order does not matter).
 
@@ -451,19 +510,19 @@ class Cumulocity:
             *types (str): List of supported log types that should be present
 
         Returns:
-            ManagedObject: Managed object
+            List[str]: Supported log types
         """
-        mo = self.device_mgmt.logs.assert_supported_types(
+        supported_types = self.device_mgmt.logs.assert_supported_types(
             *types,
             includes=True,
             **kwargs,
         )
-        return mo.to_full_json()
+        return supported_types
 
     @keyword("Should Support Log File Types")
     def should_support_logfile_types(
         self, *types: str, includes: bool = False, **kwargs
-    ) -> Dict[str, Any]:
+    ) -> List[str]:
         """Deprecated: This function will be removed in the future. Please use "Should Contain Supported Log Types"
         or "Should Have Exact Supported Log Types" instead.
 
@@ -484,7 +543,7 @@ class Cumulocity:
                 and don't fail if additional types are found
 
         Returns:
-            ManagedObject: Managed object
+            List[str]: Supported log types
         """
         deprecated(
             "Should Support Log File Types",
@@ -493,12 +552,12 @@ class Cumulocity:
                 "Should Have Exact Supported Log Types",
             ],
         )
-        mo = self.device_mgmt.logs.assert_supported_types(
+        supported_types = self.device_mgmt.logs.assert_supported_types(
             *types,
             includes=includes,
             **kwargs,
         )
-        return mo.to_full_json()
+        return supported_types
 
     @keyword("Get Log File")
     def get_logfile(
@@ -815,36 +874,30 @@ class Cumulocity:
     @keyword("Should Contain Supported Operations")
     def operation_assert_contains_supported_operations(
         self, *types: str, **kwargs
-    ) -> Dict[str, Any]:
+    ) -> List[str]:
         """Should contain the given supported operations.
 
         Additional supported operations that are not included in the assertion
         may exist.
 
         Examples:
-            | ${mo}= | Should Contain Supported Operations | c8y_Restart | c8y_SoftwareUpdate |
+            | ${supported_types}= | Should Contain Supported Operations | c8y_Restart | c8y_SoftwareUpdate |
         """
-        return self._to_json(
-            self.device_mgmt.inventory.assert_contains_supported_operations(
-                *types, **kwargs
-            )
+        return self.device_mgmt.inventory.assert_contains_supported_operations(
+            *types, **kwargs
         )
 
     @keyword("Should Have Exact Supported Operations")
-    def operation_assert_supported_operations(
-        self, *types: str, **kwargs
-    ) -> Dict[str, Any]:
+    def operation_assert_supported_operations(self, *types: str, **kwargs) -> List[str]:
         """Should have exactly the given supported operations.
 
         Additional supported operations that are not included in the assertion
         may NOT exist.
 
         Examples:
-            | ${mo}= | Should Have Exact Supported Operations | c8y_Restart |
+            | ${supported_types}= | Should Have Exact Supported Operations | c8y_Restart |
         """
-        return self._to_json(
-            self.device_mgmt.inventory.assert_supported_operations(*types, **kwargs)
-        )
+        return self.device_mgmt.inventory.assert_supported_operations(*types, **kwargs)
 
     @keyword("Create Operation")
     def create_operation(
