@@ -1214,13 +1214,18 @@ class Cumulocity:
 
     @keyword("Device Should Have Measurements")
     def assert_measurement_count(
-        self, minimum: int = 1, maximum: Optional[int] = None, **kwargs
+        self,
+        minimum: int = 1,
+        maximum: Optional[int] = None,
+        sort_newest: bool = False,
+        **kwargs,
     ) -> List[Dict[str, Any]]:
         """Assert measurement count
 
         Args:
             minimum (int, optional): Minimum number of events to expect. Defaults to 1.
             maximum (int, optional): Maximum number of events to expect. Defaults to None.
+            sort_newest (bool, optional): Whether to sort by newest first. Defaults to False.
 
         Returns:
             List[Dict[str, Any]]: List of measurements
@@ -1232,7 +1237,10 @@ class Cumulocity:
         try:
             return self._sequence_to_json(
                 self.device_mgmt.measurements.assert_count(
-                    min_count=minimum, max_count=maximum, **kwargs
+                    min_count=minimum,
+                    max_count=maximum,
+                    sort_newest=sort_newest,
+                    **kwargs,
                 )
             )
         except AssertionError as ex:
