@@ -504,7 +504,7 @@ class Cumulocity:
 
         Examples:
 
-        | ${mo}= | Should Contain Supported Log Types | mosquitto |
+        | ${types}= | Should Contain Supported Log Types | mosquitto |
 
         Args:
             *types (str): List of supported log types that should be present
@@ -515,6 +515,29 @@ class Cumulocity:
         supported_types = self.device_mgmt.logs.assert_supported_types(
             *types,
             includes=True,
+            **kwargs,
+        )
+        return supported_types
+
+    @keyword("Should Not Contain Supported Log Types")
+    def should_not_contain_supported_log_types(
+        self, *types: str, **kwargs
+    ) -> List[str]:
+        """Check that the device's supported log types (c8y_SupportedLogs) does not contain
+        the given types (the order does not matter).
+
+        Examples:
+
+        | ${types}= | Should Not Contain Supported Log Types | mosquitto |
+
+        Args:
+            *types (str): List of supported log types that should not be present
+
+        Returns:
+            List[str]: Supported log types
+        """
+        supported_types = self.device_mgmt.logs.assert_missing_supported_types(
+            *types,
             **kwargs,
         )
         return supported_types
