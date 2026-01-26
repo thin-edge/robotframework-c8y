@@ -910,6 +910,22 @@ class Cumulocity:
             *types, **kwargs
         )
 
+    @keyword("Should Not Contain Supported Operations")
+    def operation_assert_not_contains_supported_operations(
+        self, *types: str, **kwargs
+    ) -> List[str]:
+        """Should not contain the given supported operations.
+
+        Additional supported operations that are not included in the assertion
+        may exist.
+
+        Examples:
+            | ${supported_types}= | Should Not Contain Supported Operations | c8y_Restart | c8y_SoftwareUpdate |
+        """
+        return self.device_mgmt.inventory.assert_not_contains_supported_operations(
+            *types, **kwargs
+        )
+
     @keyword("Should Have Exact Supported Operations")
     def operation_assert_supported_operations(self, *types: str, **kwargs) -> List[str]:
         """Should have exactly the given supported operations.
