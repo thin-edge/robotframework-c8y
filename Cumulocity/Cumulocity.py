@@ -833,6 +833,11 @@ class Cumulocity:
     def shell_execute_command(self, text: str, **kwargs) -> AssertOperation:
         """Send a shell command to a device via the Cumulocity IoT c8y_Command operation
 
+        Note: this keyword does NOT wait for the command to complete and returns the
+        operation, not the command output. Use "Execute Shell Command And Get Output"
+        when the command's output is needed (passing this keyword's return value to
+        text assertions such as "Should Contain" raises a TypeError).
+
         Args:
             text (str): Command to execute
 
@@ -840,6 +845,26 @@ class Cumulocity:
             AssertOperation: Operation
         """
         return self.device_mgmt.command.execute(text, **kwargs)
+
+    @keyword("Execute Shell Command And Get Output")
+    def shell_execute_command_output(self, text: str, **kwargs) -> str:
+        """Send a shell command to a device via the Cumulocity IoT c8y_Command operation,
+        wait for it to be SUCCESSFUL, and return the command output
+
+        Args:
+            text (str): Command to execute
+            **kwargs: Additional arguments, e.g. timeout for the completion wait
+
+        Returns:
+            str: Command output (the operation's c8y_Command.result fragment)
+
+        Example:
+            | ${output}= | Execute Shell Command And Get Output | cat /etc/os-release | timeout=60 |
+            | Should Contain | ${output} | debian |
+        """
+        operation = self.device_mgmt.command.execute(text)
+        result = self._to_json(operation.assert_success(**kwargs))
+        return result.get("c8y_Command", {}).get("result", "")
 
     #
     # Operations
@@ -978,9 +1003,21 @@ class Cumulocity:
         )
         return operation
 
+    def _to_assert_operation(
+        self, operation: Union[str, AssertOperation]
+    ) -> AssertOperation:
+        """Accept either an AssertOperation or a plain operation id."""
+        if isinstance(operation, AssertOperation):
+            return operation
+        fetched = self.device_mgmt.context.client.operations.get(str(operation))
+        return AssertOperation(
+            context=self.device_mgmt.context,
+            operation=fetched,
+        )
+
     @keyword("Operation Should Be SUCCESSFUL")
     def operation_assert_success(
-        self, operation: AssertOperation, **kwargs
+        self, operation: Union[str, AssertOperation], **kwargs
     ) -> Dict[str, Any]:
         """Assert that the operation is set to SUCCESSFUL
 
@@ -990,11 +1027,12 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
+        operation = self._to_assert_operation(operation)
         return self._to_json(operation.assert_success(**kwargs))
 
     @keyword("Operation Should Be PENDING")
     def operation_assert_pending(
-        self, operation: AssertOperation, **kwargs
+        self, operation: Union[str, AssertOperation], **kwargs
     ) -> Dict[str, Any]:
         """Assert that the operation is set to PENDING
 
@@ -1004,11 +1042,12 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
+        operation = self._to_assert_operation(operation)
         return self._to_json(operation.assert_pending(**kwargs))
 
     @keyword("Operation Should Not Be PENDING")
     def operation_assert_not_pending(
-        self, operation: AssertOperation, **kwargs
+        self, operation: Union[str, AssertOperation], **kwargs
     ) -> Dict[str, Any]:
         """Assert that the operation is not set to PENDING
 
@@ -1018,11 +1057,12 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
+        operation = self._to_assert_operation(operation)
         return self._to_json(operation.assert_not_pending(**kwargs))
 
     @keyword("Operation Should Be DONE")
     def operation_assert_done(
-        self, operation: AssertOperation, **kwargs
+        self, operation: Union[str, AssertOperation], **kwargs
     ) -> Dict[str, Any]:
         """Assert that the operation is set to either SUCCESSFUL or FAILED
         (e.g. a final state)
@@ -1033,11 +1073,12 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
+        operation = self._to_assert_operation(operation)
         return self._to_json(operation.assert_done(**kwargs))
 
     @keyword("Operation Should Not Be DONE")
     def operation_assert_not_done(
-        self, operation: AssertOperation, **kwargs
+        self, operation: Union[str, AssertOperation], **kwargs
     ) -> Dict[str, Any]:
         """Assert that the operation is not set to either SUCCESSFUL or FAILED
         (e.g. a final state)
@@ -1048,11 +1089,12 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
+        operation = self._to_assert_operation(operation)
         return self._to_json(operation.assert_not_done(**kwargs))
 
     @keyword("Operation Should Be EXECUTING")
     def operation_assert_executing(
-        self, operation: AssertOperation, **kwargs
+        self, operation: Union[str, AssertOperation], **kwargs
     ) -> Dict[str, Any]:
         """Assert that the operation is set to EXECUTING
 
@@ -1062,11 +1104,12 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
+        operation = self._to_assert_operation(operation)
         return self._to_json(operation.assert_executing(**kwargs))
 
     @keyword("Operation Should Be DELIVERED")
     def operation_assert_delivered(
-        self, operation: AssertOperation, **kwargs
+        self, operation: Union[str, AssertOperation], **kwargs
     ) -> Dict[str, Any]:
         """Assert that the operation has been delivered via MQTT.
         Only works if the agent is subscribed to the operations via mqtt
@@ -1077,16 +1120,20 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
+        operation = self._to_assert_operation(operation)
         return self._to_json(operation.assert_delivered(**kwargs))
 
     @keyword("Operation Should Be FAILED")
     def operation_assert(
-        self, operation: AssertOperation, failure_reason: str = ".+", **kwargs
+        self,
+        operation: Union[str, AssertOperation],
+        failure_reason: str = ".+",
+        **kwargs,
     ) -> Dict[str, Any]:
         """Assert that the operation is set to FAILED
 
         Args:
-            operation (AssertOperation): Operation
+            operation (str|AssertOperation): Operation or operation id
             failure_reason (str, optional): Expected failure reason pattern.
                 Defaults to ".+" it is best practice to always include a
                 failure reason when setting to FAILED.
@@ -1094,6 +1141,7 @@ class Cumulocity:
         Returns:
             Dict[str, Any]: Operation
         """
+        operation = self._to_assert_operation(operation)
         return self._to_json(
             operation.assert_failed(failure_reason=failure_reason, **kwargs)
         )
