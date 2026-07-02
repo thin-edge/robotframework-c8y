@@ -24,6 +24,7 @@ from c8y_test_core.device_management import (
 from c8y_test_core.utils import random_name
 from c8y_test_core.assert_events import Event
 from c8y_test_core.models import Software, Configuration, Firmware
+from c8y_api.model import ManagedObject
 from robot.api.deco import keyword, library
 from robot.utils.asserts import fail
 
@@ -1309,6 +1310,96 @@ class Cumulocity:
             mo_id (str): Managed object id
         """
         self.device_mgmt.c8y.inventory.delete(mo_id)
+
+    @keyword("Create Managed Object")
+    def create_managed_object(
+        self,
+        fragments: Optional[Union[str, Dict[str, Any]]] = None,
+        cleanup: bool = True,
+        **kwargs,
+    ) -> Dict[str, Any]:
+        """Create a managed object in the inventory from arbitrary fragments
+
+        Useful for creating non-device inventory entries such as Cloud Fieldbus
+        device types (e.g. c8y_ModbusDeviceType with its c8y_Registers/c8y_Coils
+        definitions) or UI-style child device placeholders.
+
+        Args:
+            fragments (str|dict, optional): Managed object body, either a JSON string
+                or a dictionary. May include name, type and any custom fragments.
+            cleanup (bool, optional): Delete the managed object automatically at the
+                end of the suite. Defaults to True.
+
+        Returns:
+            Dict[str, Any]: Created managed object json (including its id)
+
+        Example:
+            | ${type}= | Create Managed Object | {"name": "SimType", "type": "c8y_ModbusDeviceType", "c8y_IsDeviceType": {}, "c8y_Registers": []} |
+        """
+        body = json.loads(fragments) if isinstance(fragments, str) else dict(fragments or {})
+        body.update(kwargs)
+        mo = ManagedObject.from_json(body)
+        mo.c8y = self.device_mgmt.c8y
+        created = mo.create()
+        if cleanup:
+            self._on_cleanup.append(created.delete)
+        return self._to_json(created)
+
+    @keyword("Update Managed Object")
+    def update_managed_object(
+        self,
+        mo_id: str,
+        fragments: Union[str, Dict[str, Any]],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        """Update (partial) a managed object with the given fragments
+
+        Args:
+            mo_id (str): Managed object id
+            fragments (str|dict): Fragments to merge into the managed object,
+                either a JSON string or a dictionary.
+
+        Returns:
+            Dict[str, Any]: Updated managed object json
+        """
+        body = json.loads(fragments) if isinstance(fragments, str) else dict(fragments)
+        body.update(kwargs)
+        c8y = self.device_mgmt.c8y
+        updated = c8y.put(
+            f"/inventory/managedObjects/{mo_id}",
+            json=body,
+            accept="application/vnd.com.nsn.cumulocity.managedobject+json",
+        )
+        return updated
+
+    @keyword("Get Managed Object")
+    def get_managed_object(self, mo_id: str, **kwargs) -> Dict[str, Any]:
+        """Get a managed object by id
+
+        Args:
+            mo_id (str): Managed object id
+
+        Returns:
+            Dict[str, Any]: Managed object json
+        """
+        return self._to_json(self.device_mgmt.c8y.inventory.get(mo_id))
+
+    @keyword("Add Child Device Reference")
+    def add_child_device_reference(self, parent_id: str, child_id: str, **kwargs):
+        """Reference an existing managed object as a child device of a parent
+
+        Mirrors what the Cloud Fieldbus UI does: it creates the child device
+        placeholder managed object and attaches it to the gateway before issuing
+        the c8y_ModbusDevice operation.
+
+        Args:
+            parent_id (str): Managed object id of the parent (e.g. the gateway)
+            child_id (str): Managed object id of the child
+        """
+        self.device_mgmt.c8y.post(
+            f"/inventory/managedObjects/{parent_id}/childDevices",
+            json={"managedObject": {"id": str(child_id)}},
+        )
 
     @keyword("Device Should Have Fragments")
     def assert_contains_fragments(self, *fragments: str, **kwargs) -> Dict[str, Any]:
